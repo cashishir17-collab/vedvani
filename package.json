@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "prisma migrate deploy && (prisma db seed || true) && next start -p ${PORT:-8080}",
+    "start": "prisma db push --accept-data-loss && (prisma db seed || true) && next start -p ${PORT:-8080}",
     "lint": "next lint",
     "postinstall": "prisma generate || true"
   },
