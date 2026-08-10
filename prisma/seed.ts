@@ -328,6 +328,11 @@ const passages: SeedPassage[] = [
 ];
 
 async function main() {
+  const existing = await prisma.corpusPassage.count();
+  if (existing > 0) {
+    console.log(`Corpus already has ${existing} passages — skipping seed.`);
+    return;
+  }
   console.log(`Seeding ${passages.length} corpus passages...`);
   for (const p of passages) {
     await prisma.corpusPassage.create({ data: p });
