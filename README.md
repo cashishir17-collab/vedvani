@@ -298,6 +298,67 @@ overwrite this stub with the real generated client as usual. Phase 6–8
 extended the same hand-written stub again to add `Message.responseMode`
 and the new `KnowledgeEntity` model/delegate.
 
+## Phase 9–11: corpus expansion, accessibility/SEO, admin analytics
+
+**Phase 9 — Corpus expansion (Puranas + saints + samskaras)**
+- 23 new `CorpusPassage` rows added to `prisma/seed.ts` (all
+  `sourceType: "paraphrase_summary"`, attribution `"VedVani summary"`),
+  bringing the corpus to 87 total passages (4 `primary_text`, 83
+  `paraphrase_summary`). Coverage added: brief overview summaries of six
+  major Puranas (Vishnu, Shiva, Bhagavata, Markandeya, Devi Bhagavata,
+  Skanda); four deeper darshana entries (Nyaya's pramanas, Vaisheshika's
+  atomism, Samkhya's purusha-prakriti dualism, Mimamsa's ritual
+  hermeneutics — checked against the existing six-darshana overview
+  entries from Phase 6–8 to avoid duplication); seven brief biographical
+  summaries of saints/acharyas (Adi Shankaracharya, Ramanuja, Madhvacharya,
+  Tulsidas, Mirabai, Kabir, Chaitanya Mahaprabhu); and six entries on
+  samskaras and daily practice (an overview of the samskaras, upanayana,
+  vivaha, antyesti, sandhyavandanam, and the basic structure of home puja).
+
+**Phase 10 — Accessibility + SEO**
+- Added `metadata`/`generateMetadata` exports to every top-level page,
+  with dynamic metadata for `/read/[id]`, `/learn/[slug]`, and
+  `/entities/[slug]` pulling the real title/description from the DB. The
+  home page (`/`) and `/login` were split into a small server component
+  (`page.tsx`, carrying `metadata`) plus a `"use client"` component
+  (`HomeClient.tsx` / `LoginClient.tsx`) since a client component cannot
+  itself export `metadata`.
+- Added `src/app/sitemap.ts` (lists static routes plus every
+  `CorpusPassage` `/read/[id]` URL and every `KnowledgeEntity`
+  `/entities/[slug]` URL via Prisma) and `src/app/robots.ts` (allows all
+  crawlers, points at `/sitemap.xml`, disallows `/admin`, `/api`,
+  `/memory`, `/history`, `/bookmarks`).
+- Accessibility: added a `.sr-only` utility class in `globals.css` and
+  used it for the home composer's textarea label and the login page's
+  email label; added `aria-label`/`aria-pressed` to the mic toggle button
+  and an `aria-label` to the locale toggle button. `<html lang>` in
+  `layout.tsx` already reflected the resolved locale cookie server-side —
+  confirmed and left as-is.
+
+**Phase 11 — Admin analytics + observability basics**
+- Added a `RequestLog` model to `prisma/schema.prisma` (`path`, `method`,
+  `statusCode`, `durationMs`, `createdAt`) — no raw request/message
+  content is ever stored.
+- Added `src/lib/requestLog.ts` (`logRequest()` plus a `withRequestLog()`
+  wrapper) and wired it into `POST /api/chat`, `GET/POST/DELETE
+  /api/bookmarks`, and `POST /api/reports` by wrapping the existing
+  handler bodies — return values and behavior are unchanged.
+- Extended `/admin` with an "Analytics" section: total conversations,
+  messages, users, and bookmarks; open vs. resolved `UserReport` counts;
+  and a "requests in last 24h by path" table via
+  `prisma.requestLog.groupBy()`. All plain Prisma aggregate queries — no
+  charting library, no new dependencies.
+- Added a cost-awareness stub in `src/lib/chat.ts`: after each Anthropic
+  API call, if `response.usage` is present, `input_tokens`/`output_tokens`
+  are logged via `console.log`, with a comment marking where persisted
+  token-usage tracking (e.g. on `RequestLog` or a future `UsageLog` model)
+  should be added later.
+- `node_modules/.prisma/client/{index,default,edge,wasm}.d.ts` hand
+  stubs extended with a `RequestLogModel` type, a `requestLog` client
+  delegate, and a `groupBy()` method on `ModelDelegate` (needed for the
+  admin analytics "requests by path" query), matching the same
+  hand-maintained-stub pattern used by every prior phase.
+
 ## Project structure
 
 - `src/app` — pages (`/`, `/chat/[id]`, `/history`, `/memory`) and API routes

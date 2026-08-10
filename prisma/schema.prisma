@@ -147,3 +147,15 @@ model KnowledgeEntity {
   relatedPassageTitleContains String[]
   createdAt                   DateTime @default(now())
 }
+
+// Phase 11: lightweight request/observability logging. Deliberately does
+// NOT store raw user message content or any other sensitive payload —
+// only path/method/status/timing metadata, for basic admin analytics.
+model RequestLog {
+  id         String   @id @default(uuid())
+  path       String
+  method     String
+  statusCode Int
+  durationMs Int
+  createdAt  DateTime @default(now())
+}

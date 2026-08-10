@@ -30,7 +30,13 @@ export default function LocaleToggle({ locale }: { locale: Locale }) {
   }
 
   return (
-    <button type="button" className="secondary" onClick={toggle} disabled={pending}>
+    <button
+      type="button"
+      className="secondary"
+      onClick={toggle}
+      disabled={pending}
+      aria-label={locale === "en" ? "Switch to Hindi" : "Switch to English"}
+    >
       {locale === "en" ? "हिन्दी" : "English"}
     </button>
   );

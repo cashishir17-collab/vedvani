@@ -4,6 +4,13 @@ import { resolveSession } from "@/lib/session";
 import { LOCALE_COOKIE_NAME, isLocale, t } from "@/lib/i18n";
 import BookmarkList from "./BookmarkList";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Bookmarks — VedVani",
+  description: "Your saved scripture passages and answers.",
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function BookmarksPage() {

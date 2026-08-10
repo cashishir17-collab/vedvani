@@ -253,6 +253,19 @@ export async function runChatTurn(params: {
     });
     const textBlock = response.content.find((b: any) => b.type === "text");
     answer = textBlock && "text" in textBlock ? textBlock.text : "I was unable to generate a response.";
+
+    // Phase 11 cost-awareness stub: response.usage (from the Anthropic SDK
+    // response) carries input_tokens / output_tokens for this call. For now
+    // we just log them to console as a cheap first step toward cost
+    // observability. TODO(future phase): persist per-request token usage
+    // (e.g. on RequestLog or a dedicated UsageLog model) instead of only
+    // logging, so per-user/per-conversation cost can be aggregated and
+    // surfaced in the admin Analytics section.
+    if (response.usage) {
+      console.log(
+        `[chat] token usage — input: ${response.usage.input_tokens}, output: ${response.usage.output_tokens}`
+      );
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
     answer = `VedVani synthesis unavailable right now: ${msg}. Here are the closest passages we found in our library:\n\n${passages

@@ -157,3 +157,19 @@ button.danger { background: #b91c1c; }
   justify-content: space-between;
   align-items: center;
 }
+
+/* Phase 10: visually-hidden but screen-reader-accessible utility, used for
+   <label> elements associated with inputs that don't need a visible label
+   in the UI (the placeholder / surrounding context already conveys intent
+   visually, but a real <label> is still required for accessibility). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import BookmarkButton from "./BookmarkButton";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const passage = await prisma.corpusPassage.findUnique({ where: { id: params.id } });
+  if (!passage) {
+    return { title: "Passage not found — VedVani" };
+  }
+  return {
+    title: `${passage.title} — ${passage.sourceWork} — VedVani`,
+    description: passage.translationText.slice(0, 155),
+  };
+}
 
 export default async function ReadPassagePage({ params }: { params: { id: string } }) {
   const passage = await prisma.corpusPassage.findUnique({ where: { id: params.id } });

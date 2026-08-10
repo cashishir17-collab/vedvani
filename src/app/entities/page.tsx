@@ -2,6 +2,13 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { LOCALE_COOKIE_NAME, isLocale, t } from "@/lib/i18n";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Entities — VedVani",
+  description: "Browse deities, concepts, places, and people from Hindu tradition, with descriptions across multiple schools of thought.",
+};
+
 export const dynamic = "force-dynamic";
 
 const TYPE_ORDER = ["deity", "concept", "place", "person"] as const;

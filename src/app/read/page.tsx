@@ -2,6 +2,13 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { LOCALE_COOKIE_NAME, isLocale, t } from "@/lib/i18n";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Read — VedVani",
+  description: "Browse the VedVani scripture corpus: passages from the Bhagavad Gita, Upanishads, Rigveda, Puranas, and more, each with source attribution.",
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function ReadIndexPage() {

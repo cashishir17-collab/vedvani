@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { LEARNING_PATHS } from "@/lib/learningPaths";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
+  const path = LEARNING_PATHS.find((p) => p.slug === params.slug);
+  if (!path) {
+    return { title: "Learning path not found — VedVani" };
+  }
+  return {
+    title: `${path.title} — VedVani`,
+    description: path.description.slice(0, 155),
+  };
+}
 
 export default async function LearningPathPage({ params }: { params: { slug: string } }) {
   const path = LEARNING_PATHS.find((p) => p.slug === params.slug);

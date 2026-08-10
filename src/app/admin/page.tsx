@@ -21,11 +21,90 @@ export default async function AdminPage() {
     prisma.userReport.findMany({ orderBy: { createdAt: "desc" } }),
   ]);
 
+  // Phase 11: admin analytics. All plain Prisma count/groupBy aggregates —
+  // no charting library, no new dependencies.
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const [
+    conversationCount,
+    messageCount,
+    userCount,
+    bookmarkCount,
+    openReportCount,
+    resolvedReportCount,
+    recentRequests,
+  ] = await Promise.all([
+    prisma.conversation.count(),
+    prisma.message.count(),
+    prisma.user.count(),
+    prisma.bookmark.count(),
+    prisma.userReport.count({ where: { status: "open" } }),
+    prisma.userReport.count({ where: { status: "resolved" } }),
+    prisma.requestLog.groupBy({
+      by: ["path"],
+      where: { createdAt: { gte: since24h } },
+      _count: { _all: true },
+      orderBy: { _count: { path: "desc" } },
+    }),
+  ]);
+
   return (
     <div>
       <div className="card">
         <h2 style={{ marginTop: 0 }}>{t(locale, "adminTitle")}</h2>
         <p className="muted">Review corpus passages and resolve user reports.</p>
+      </div>
+
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Analytics</h3>
+        <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 16 }}>
+          <tbody>
+            <tr>
+              <td>Total conversations</td>
+              <td>{conversationCount}</td>
+            </tr>
+            <tr>
+              <td>Total messages</td>
+              <td>{messageCount}</td>
+            </tr>
+            <tr>
+              <td>Total users</td>
+              <td>{userCount}</td>
+            </tr>
+            <tr>
+              <td>Total bookmarks</td>
+              <td>{bookmarkCount}</td>
+            </tr>
+            <tr>
+              <td>Open reports</td>
+              <td>{openReportCount}</td>
+            </tr>
+            <tr>
+              <td>Resolved reports</td>
+              <td>{resolvedReportCount}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>Requests in last 24h by path</h4>
+        {recentRequests.length === 0 && <p className="muted">No requests logged in the last 24 hours.</p>}
+        {recentRequests.length > 0 && (
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ textAlign: "left" }}>
+                <th>Path</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentRequests.map((r: any) => (
+                <tr key={r.path}>
+                  <td>{r.path}</td>
+                  <td>{r._count._all}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       <div className="card">

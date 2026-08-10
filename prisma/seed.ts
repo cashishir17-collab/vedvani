@@ -62,6 +62,19 @@
  * "paraphrase_summary" with attribution "VedVani summary" because exact
  * historical translator wording could not be confidently reproduced here,
  * or because the entry is a narrative/summary by nature.
+ *
+ * Phase 9 corpus expansion: 23 further entries were added, bringing the
+ * total to 87 passages (4 "primary_text", 83 "paraphrase_summary"). The
+ * additions cover: brief overview summaries of six major Puranas (Vishnu,
+ * Shiva, Bhagavata, Markandeya, Devi Bhagavata, Skanda); four deeper
+ * darshana entries (Nyaya's pramanas, Vaisheshika's atomism, Samkhya's
+ * purusha-prakriti dualism, Mimamsa's ritual hermeneutics); seven brief
+ * biographical summaries of saints/acharyas (Adi Shankaracharya, Ramanuja,
+ * Madhvacharya, Tulsidas, Mirabai, Kabir, Chaitanya Mahaprabhu); and six
+ * entries on samskaras and daily practice (an overview of the samskaras,
+ * upanayana, vivaha, antyesti, sandhyavandanam, and the basic structure of
+ * home puja). Every Phase 9 entry is "paraphrase_summary" with attribution
+ * "VedVani summary" — none claim to be verbatim primary-text quotations.
  * ====================================================================
  */
 
@@ -817,6 +830,269 @@ const passages: SeedPassage[] = [
     sourceType: "paraphrase_summary",
     attribution: "VedVani summary — Advaita-informed reading (illustrative interpretive gloss, not a specific historical commentator's words)",
     traditionTags: ["Advaita", "Vedanta"],
+  },
+
+  // ---------------- Phase 9: Purana overviews ----------------
+  // Brief, careful narrative descriptions of what each Purana covers —
+  // NOT fabricated verse text. All paraphrase_summary.
+  {
+    title: "Vishnu Purana — overview",
+    sourceWork: "Vishnu Purana",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "The Vishnu Purana is a Vaishnava Purana organized around the classical Purana 'five topics' (pancha-lakshana): creation, re-creation, genealogies of gods and sages, cosmic time-cycles (manvantaras), and dynastic histories, including genealogies leading up to the Yadava line associated with Krishna. It presents Vishnu as the sustaining supreme reality underlying these cycles.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Vaishnavism"],
+  },
+  {
+    title: "Shiva Purana — overview",
+    sourceWork: "Shiva Purana",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "The Shiva Purana is a Shaiva Purana centered on the greatness, forms, and mythology of Shiva, including his roles as ascetic and householder, stories of the emergence of the Shiva linga as a symbol of the formless absolute, and the Shiva-Parvati-Ganesha-Kartikeya family narratives central to Shaiva devotional life.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Shaivism"],
+  },
+  {
+    title: "Bhagavata Purana — overview",
+    sourceWork: "Bhagavata Purana",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "The Bhagavata Purana (Shrimad Bhagavatam) is among the most influential Vaishnava Puranas, devoted especially to the life and childhood exploits (lila) of Krishna, along with accounts of other avataras of Vishnu. It is a foundational scriptural source for bhakti (devotional) theology and practice across many later Vaishnava movements.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Vaishnavism"],
+  },
+  {
+    title: "Markandeya Purana — overview",
+    sourceWork: "Markandeya Purana",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "The Markandeya Purana is framed as teachings given to the sage Markandeya, and is best known for containing the Devi Mahatmya (Chandi Patha), the foundational scriptural text of goddess-centered (Shakta) worship recounting the Goddess's defeat of the buffalo-demon Mahishasura and other demons.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Shaktism"],
+  },
+  {
+    title: "Devi Bhagavata Purana — overview",
+    sourceWork: "Devi Bhagavata Purana",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "The Devi Bhagavata Purana is a major Shakta Purana that presents the Goddess (Devi) as the supreme reality underlying and superior to the other principal deities, offering a Devi-centered cosmology, mythology, and theology parallel in structure to Vaishnava Puranas centered on Vishnu.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Shaktism"],
+  },
+  {
+    title: "Skanda Purana — overview",
+    sourceWork: "Skanda Purana",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "The Skanda Purana is the largest of the traditional eighteen Mahapuranas, named for Skanda (Kartikeya), Shiva's son. It is less a single unified narrative than a vast compilation of regional mahatmyas (accounts extolling sacred places and pilgrimage sites), devotional stories, and ritual instructions across Shaiva, Vaishnava, and other traditions.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Shaivism", "general"],
+  },
+
+  // ---------------- Phase 9: darshana depth (additional angles) ----------------
+  {
+    title: "Nyaya's four means of valid knowledge (pramanas)",
+    sourceWork: "Nyaya darshana",
+    location: "general teaching (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Nyaya epistemology holds that reliable knowledge arises through exactly four valid means (pramanas): pratyaksha (direct perception), anumana (inference, such as inferring fire from smoke), upamana (comparison/analogy), and shabda (testimony, especially of trustworthy sources including the Veda). Much of Nyaya's technical apparatus is devoted to analyzing when inference is genuinely valid versus fallacious.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Nyaya", "general"],
+  },
+  {
+    title: "Vaisheshika's atomism (paramanu-vada)",
+    sourceWork: "Vaisheshika darshana",
+    location: "general teaching (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Vaisheshika holds that the material world is ultimately composed of indivisible, eternal atoms (paramanu) of the four elements (earth, water, fire, air), which combine in specific ways under an unseen moral-causal principle (adrishta) to form the composite objects of ordinary experience — an early systematic atomist physics developed alongside its category-based (padartha) metaphysics.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Vaisheshika", "general"],
+  },
+  {
+    title: "Samkhya's purusha-prakriti dualism",
+    sourceWork: "Samkhya darshana",
+    location: "general teaching (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Samkhya's core dualism distinguishes purusha (pure, inactive consciousness, plural — one per individual) from prakriti (single, active, unconscious material nature). Bondage arises from purusha's mistaken identification with the workings of prakriti (intellect, ego, mind, senses, elements); liberation (kaivalya) is the discriminative realization that purusha was never actually entangled, only apparently reflected in prakriti's activity.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Samkhya", "general"],
+  },
+  {
+    title: "Mimamsa's hermeneutics of ritual injunction",
+    sourceWork: "Purva Mimamsa darshana",
+    location: "general teaching (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Purva Mimamsa developed a detailed hermeneutic method for interpreting Vedic injunctions (vidhi) — rules for how to resolve apparent conflicts between ritual texts, how a sentence's primary injunctive force is identified, and how subsidiary statements (arthavada) relate to the main command — treating correct ritual performance, not the ritual's 'meaning' in a modern sense, as the central concern of Vedic exegesis.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Mimamsa", "general"],
+  },
+
+  // ---------------- Phase 9: saints and bhakti figures ----------------
+  {
+    title: "Adi Shankaracharya and the systematization of Advaita",
+    sourceWork: "Saints and acharyas (biographical summary)",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Adi Shankaracharya (traditionally dated c. 8th century CE) is credited with systematizing Advaita (non-dual) Vedanta through commentaries on the Upanishads, Bhagavad Gita, and Brahma Sutras, and with founding a network of monastic centers (mathas) across India. His teaching centers on the non-difference of Atman and Brahman and the provisional status of the phenomenal world under maya.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Advaita", "Vedanta"],
+  },
+  {
+    title: "Ramanuja and Vishishtadvaita",
+    sourceWork: "Saints and acharyas (biographical summary)",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Ramanuja (traditionally dated c. 11th-12th century CE) systematized Vishishtadvaita ('qualified non-dualism'), teaching that the individual self and the material world are real and form the 'body' of Brahman (identified with Vishnu-Narayana), rather than illusory appearances — grounding a devotional (bhakti) theology in which loving surrender to a personal Supreme is central to liberation.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Vaishnavism", "Vedanta"],
+  },
+  {
+    title: "Madhvacharya and Dvaita",
+    sourceWork: "Saints and acharyas (biographical summary)",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Madhvacharya (traditionally dated c. 13th century CE) founded the Dvaita ('dualist') school of Vedanta, teaching an eternal, real distinction between the Supreme (Vishnu), individual souls, and matter — souls remain forever distinct from and dependent on God even in liberation, which is understood as eternal blissful service rather than merger.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Vaishnavism", "Vedanta"],
+  },
+  {
+    title: "Tulsidas and the Ramcharitmanas",
+    sourceWork: "Saints and acharyas (biographical summary)",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Tulsidas (traditionally dated c. 16th century CE) composed the Ramcharitmanas, a devotional retelling of the Rama story in Awadhi (a vernacular related to Hindi), which became one of the most widely read and recited devotional texts in North Indian Hinduism, centering bhakti to Rama as accessible to all regardless of caste or learning.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Vaishnavism", "general"],
+  },
+  {
+    title: "Mirabai and devotional surrender",
+    sourceWork: "Saints and acharyas (biographical summary)",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Mirabai (traditionally dated c. 16th century CE), a Rajasthani princess-poet-saint, is remembered for her passionate devotional (bhakti) poetry addressed to Krishna, expressing total surrender and love that defied social and familial expectations placed on her — her songs remain widely sung across North Indian devotional traditions.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Vaishnavism", "general"],
+  },
+  {
+    title: "Kabir and the nirguna bhakti tradition",
+    sourceWork: "Saints and acharyas (biographical summary)",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Kabir (traditionally dated c. 15th century CE) was a poet-saint whose verses (dohas and padas) express devotion to a formless, attribute-less (nirguna) divine reality beyond sectarian labels, sharply criticizing empty ritualism and religious hypocrisy across both Hindu and Muslim contexts. His poetry is claimed and revered across multiple traditions.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["general"],
+  },
+  {
+    title: "Chaitanya Mahaprabhu and Gaudiya Vaishnavism",
+    sourceWork: "Saints and acharyas (biographical summary)",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Chaitanya Mahaprabhu (traditionally dated c. 15th-16th century CE) is regarded by Gaudiya Vaishnavas as the founder of a devotional movement centered on ecstatic congregational chanting (sankirtana) of Krishna's names, especially the Hare Krishna mahamantra, teaching bhakti — particularly the mood of Radha's love for Krishna — as the highest spiritual path.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["Vaishnavism"],
+  },
+
+  // ---------------- Phase 9: samskaras and daily practice ----------------
+  {
+    title: "Samskaras — the Hindu life-cycle rites",
+    sourceWork: "Dharmashastra tradition (composite)",
+    location: "general overview (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Samskaras are a traditional series of sacraments marking key transitions across a Hindu life — historically enumerated in varying lists of around sixteen (shodasha samskara), including rites at conception, birth, name-giving, first feeding, first haircut, initiation into study, marriage, and funeral rites. They are understood to purify and sanctify each life stage rather than as merely social ceremonies.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["general"],
+  },
+  {
+    title: "Upanayana — the sacred thread initiation",
+    sourceWork: "Dharmashastra tradition (composite)",
+    location: "samskara: upanayana (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Upanayana is the initiation rite, traditionally performed in childhood or youth for certain communities, marking formal entry into Vedic study under a teacher (guru) and investing the student with the sacred thread (yajnopavita). It traditionally includes the transmission of the Gayatri mantra and is considered a 'second birth' into disciplined learning.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["general"],
+  },
+  {
+    title: "Vivaha — the Hindu marriage samskara",
+    sourceWork: "Dharmashastra tradition (composite)",
+    location: "samskara: vivaha (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Vivaha (marriage) is treated as one of the most significant samskaras, uniting two individuals in a lifelong partnership understood to support dharma, progeny, and mutual companionship. Traditional ceremonies include rites such as kanyadaan (the giving of the bride), the saptapadi (seven steps/vows taken together around sacred fire), and invocation of witnessing deities, with regional variation across India.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["general"],
+  },
+  {
+    title: "Antyesti — the final rites",
+    sourceWork: "Dharmashastra tradition (composite)",
+    location: "samskara: antyesti (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Antyesti ('last sacrifice') is the funeral samskara, traditionally involving cremation and subsequent rites performed by surviving family (notably shraddha ceremonies) understood to assist the departed soul's transition and to fulfill the living's obligations of remembrance and gratitude toward ancestors (pitrs).",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["general"],
+  },
+  {
+    title: "Sandhyavandanam — daily twilight prayer",
+    sourceWork: "Dharmashastra tradition (composite)",
+    location: "daily practice: sandhyavandanam (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "Sandhyavandanam is a traditional daily prayer ritual performed at the junctions of the day (dawn, midday, and dusk), historically obligatory for initiated members of certain communities, involving purificatory sipping of water (achamana), pranayama (breath regulation), recitation of the Gayatri mantra, and offerings to the sun — understood as a discipline that structures the day around remembrance of the sacred.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["general"],
+  },
+  {
+    title: "The basic structure of home puja",
+    sourceWork: "General devotional practice (composite)",
+    location: "daily practice: puja (summary)",
+    language: "English (paraphrase)",
+    translationText:
+      "A typical home puja (worship ritual) commonly follows a broad sequence — invocation of the deity, offering of items such as water, light (a lit lamp/diya), incense, flowers, and food (naivedya), accompanied by mantras or devotional songs, and closing with aarti (the waving of a lit lamp) — though specific steps, deities, and elaborateness vary widely by family, region, and tradition.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary",
+    traditionTags: ["general"],
   },
 
 ];

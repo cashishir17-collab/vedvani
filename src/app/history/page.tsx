@@ -3,6 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { resolveSession } from "@/lib/session";
 import { LOCALE_COOKIE_NAME, isLocale, t } from "@/lib/i18n";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "History — VedVani",
+  description: "Your past conversations with VedVani.",
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function HistoryPage() {

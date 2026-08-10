@@ -1,8 +1,22 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 type TraditionScopedDescription = { tradition: string; description: string };
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const entity = await prisma.knowledgeEntity.findUnique({ where: { slug: params.slug } });
+  if (!entity) {
+    return { title: "Entity not found — VedVani" };
+  }
+  const descriptions = (entity.traditionScopedDescriptions as unknown as TraditionScopedDescription[]) ?? [];
+  const firstDescription = descriptions[0]?.description ?? "";
+  return {
+    title: `${entity.name} — VedVani`,
+    description: firstDescription.slice(0, 155) || `${entity.name} in Hindu tradition, described across multiple schools of thought.`,
+  };
+}
 
 export default async function EntityDetailPage({ params }: { params: { slug: string } }) {
   const entity = await prisma.knowledgeEntity.findUnique({ where: { slug: params.slug } });
