@@ -12,9 +12,9 @@ function readLocaleCookie(): Locale {
   return isLocale(val) ? val : "en";
 }
 
-export default function HomeClient() {
+export default function HomeClient({ prefill }: { prefill?: string } = {}) {
   const router = useRouter();
-  const [text, setText] = useState("");
+  const [text, setText] = useState(prefill ?? "");
   const [loading, setLoading] = useState(false);
   const [micSupported, setMicSupported] = useState(false);
   const [listening, setListening] = useState(false);

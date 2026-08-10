@@ -34,7 +34,7 @@ export default async function ReadIndexPage() {
     <div>
       <div className="card">
         <h2 style={{ marginTop: 0 }}>{t(locale, "readTitle")}</h2>
-        <p className="muted">{t(locale, "readIntro")}</p>
+        <p className="muted">{t(locale, "readIntro")} See the new <a href="/library">Hindu Scripture Library</a> for a family-organised browse experience.</p>
       </div>
       {Array.from(grouped.entries()).map(([sourceWork, list]) => {
         const preview = list.slice(0, PREVIEW_COUNT);
