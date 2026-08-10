@@ -102,6 +102,43 @@ Dharmashastra tradition summaries). Every entry is labeled `sourceType`:
 See the comment block at the top of `prisma/seed.ts` for the full breakdown and the
 no-fabrication rule for future editors.
 
+## Bulk corpus ingestion
+
+On top of the ~58 hand-curated `prisma/seed.ts` passages, VedVani also bulk-ingests
+~5,076 passages from five public-domain books, gzipped as pre-chunked JSON under
+`prisma/bulk-data/` and loaded by `prisma/ingest-bulk.ts`:
+
+- **Rigveda** (Griffith, 1896 translation) — `rigveda_english.chunks.json.gz`, 954 passages.
+- **Four Vedas** (Griffith/Keith/Bloomfield translations of Rigveda, Yajurveda, Samaveda,
+  Atharvaveda) — `Four_Vedas_English_Translation.chunks.json.gz`, 3,199 passages.
+- **Manusmriti (Laws of Manu)** (Buhler, 1886 translation) — `manusmriti.chunks.json.gz`,
+  83 passages.
+- **Upanishads** (Max Muller, 1879 translation, Sacred Books of the East) —
+  `upanishads01ml.chunks.json.gz`, 838 passages.
+- **Hanuman Chalisa** (traditional text) — `hanuman_chalisa_mobile_friendly.chunks.json.gz`,
+  2 passages.
+
+These translations were verified public-domain via title-page inspection (translator
+name + publication date, all pre-1923/clearly expired-copyright editions), but — unlike
+the hand-picked seed passages, which were individually spot-checked — they were **not**
+reviewed line-by-line before ingestion. Every row inserted by `ingest-bulk.ts` is
+therefore explicitly stamped `reviewStatus: "unreviewed"`, distinguishing bulk-digitized
+content from the hand-curated seed set so admins can review or flag individual passages
+over time from the `/admin` passage table (which now supports pagination and filtering
+by `sourceWork`/`reviewStatus` given the much larger row count).
+
+`ingest-bulk.ts` runs automatically as part of the `start` script (after `prisma db push`
+and `prisma db seed`, wrapped in `|| true` so a failure there doesn't crash the
+container) and is idempotent: for each file, it counts existing `CorpusPassage` rows
+with that file's `sourceWork` and skips re-inserting if the count already meets or
+exceeds the file's chunk count.
+
+**Explicitly excluded:** during source-library review, ~50 other PDFs were found to be
+likely-copyrighted modern publisher editions (Gita Press editions, books by named modern
+translators/publishers, etc.) rather than public-domain 19th/early-20th-century
+translations. Those were deliberately left out of `prisma/bulk-data/` and are **not**
+ingested — do not add them without a fresh, explicit public-domain/licensing review.
+
 ## Retrieval
 
 `src/lib/retrieval.ts` now ranks matches using Postgres full-text search

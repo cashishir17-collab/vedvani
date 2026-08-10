@@ -8,7 +8,13 @@ import ReportRow from "./ReportRow";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+const PASSAGES_PER_PAGE = 50;
+
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams?: { page?: string; sourceWork?: string; reviewStatus?: string };
+}) {
   const { isAdmin } = await resolveAdminSession();
   if (!isAdmin) {
     redirect("/");
@@ -16,10 +22,44 @@ export default async function AdminPage() {
   const cookieLocale = cookies().get(LOCALE_COOKIE_NAME)?.value;
   const locale = isLocale(cookieLocale) ? cookieLocale : "en";
 
-  const [passages, reports] = await Promise.all([
-    prisma.corpusPassage.findMany({ orderBy: { title: "asc" } }),
+  // Phase: bulk corpus ingestion added ~5000 rows to CorpusPassage, so the
+  // passage-review table is now paginated (50/page) and filterable by
+  // sourceWork/reviewStatus rather than rendering every row unbounded.
+  const page = Math.max(1, parseInt(searchParams?.page ?? "1", 10) || 1);
+  const sourceWorkFilter = searchParams?.sourceWork || undefined;
+  const reviewStatusFilter = searchParams?.reviewStatus || undefined;
+
+  const passageWhere = {
+    ...(sourceWorkFilter ? { sourceWork: sourceWorkFilter } : {}),
+    ...(reviewStatusFilter ? { reviewStatus: reviewStatusFilter } : {}),
+  };
+
+  const [passages, passageCount, sourceWorkRows, reports] = await Promise.all([
+    prisma.corpusPassage.findMany({
+      where: passageWhere,
+      orderBy: { title: "asc" },
+      skip: (page - 1) * PASSAGES_PER_PAGE,
+      take: PASSAGES_PER_PAGE,
+    }),
+    prisma.corpusPassage.count({ where: passageWhere }),
+    prisma.corpusPassage.findMany({
+      distinct: ["sourceWork"],
+      select: { sourceWork: true },
+      orderBy: { sourceWork: "asc" },
+    }),
     prisma.userReport.findMany({ orderBy: { createdAt: "desc" } }),
   ]);
+
+  const totalPages = Math.max(1, Math.ceil(passageCount / PASSAGES_PER_PAGE));
+  const sourceWorks = sourceWorkRows.map((r: any) => r.sourceWork);
+
+  function pageHref(targetPage: number) {
+    const params = new URLSearchParams();
+    if (sourceWorkFilter) params.set("sourceWork", sourceWorkFilter);
+    if (reviewStatusFilter) params.set("reviewStatus", reviewStatusFilter);
+    params.set("page", String(targetPage));
+    return `/admin?${params.toString()}`;
+  }
 
   // Phase 11: admin analytics. All plain Prisma count/groupBy aggregates —
   // no charting library, no new dependencies.
@@ -108,7 +148,30 @@ export default async function AdminPage() {
       </div>
 
       <div className="card">
-        <h3 style={{ marginTop: 0 }}>Corpus Passages ({passages.length})</h3>
+        <h3 style={{ marginTop: 0 }}>Corpus Passages ({passageCount})</h3>
+        <form method="get" style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+          <label>
+            Source Work:{" "}
+            <select name="sourceWork" defaultValue={sourceWorkFilter ?? ""}>
+              <option value="">All</option>
+              {sourceWorks.map((sw: string) => (
+                <option key={sw} value={sw}>
+                  {sw}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Review Status:{" "}
+            <select name="reviewStatus" defaultValue={reviewStatusFilter ?? ""}>
+              <option value="">All</option>
+              <option value="unreviewed">unreviewed</option>
+              <option value="reviewed">reviewed</option>
+              <option value="flagged">flagged</option>
+            </select>
+          </label>
+          <button type="submit">Filter</button>
+        </form>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ textAlign: "left" }}>
@@ -134,6 +197,15 @@ export default async function AdminPage() {
             ))}
           </tbody>
         </table>
+        {totalPages > 1 && (
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 12 }}>
+            <span className="muted">
+              Page {page} of {totalPages}
+            </span>
+            {page > 1 && <a href={pageHref(page - 1)}>&larr; Prev</a>}
+            {page < totalPages && <a href={pageHref(page + 1)}>Next &rarr;</a>}
+          </div>
+        )}
       </div>
 
       <div className="card">
