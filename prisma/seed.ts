@@ -743,23 +743,368 @@ const passages: SeedPassage[] = [
     traditionTags: ["Vedanta", "Advaita", "general"],
   },
 
+  // ---------------- Phase 8: alternate interpretive layers ("commentary comparison") ----------------
+  // IMPORTANT: the entries below are NOT claims about what any specific
+  // named historical commentator wrote. They are VedVani's own illustrative
+  // interpretive glosses on verses already seeded above, deliberately
+  // written to show how the SAME verse reads differently through different
+  // traditions' lenses (per BRD FR-READ-002 "commentary comparison"). Each
+  // is sourceType "paraphrase_summary" and clearly attributed as a VedVani
+  // summary informed by a named tradition — never presented as primary
+  // scripture text or as a verbatim quotation from a real commentator.
+  {
+    title: "On action without attachment — an Advaita-informed reading",
+    sourceWork: "Bhagavad Gita",
+    location: "2.47",
+    language: "English (paraphrase)",
+    translationText:
+      "Read through an Advaita (non-dual) lens, this verse points past ethics toward metaphysics: the 'fruits' one must release are ultimately the illusion of a separate doer at all. Action continues in the world of appearances, but the wise recognize the true Self (Atman) as the changeless witness, untouched by the results of any action performed by body and mind.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary — Advaita-informed reading (illustrative interpretive gloss, not a specific historical commentator's words)",
+    traditionTags: ["Advaita", "Vedanta"],
+  },
+  {
+    title: "On action without attachment — a Bhakti-informed reading",
+    sourceWork: "Bhagavad Gita",
+    location: "2.47",
+    language: "English (paraphrase)",
+    translationText:
+      "Read through a Bhakti (devotional) lens, this verse is about offering: one performs one's duty as an act dedicated to the divine, surrendering the outcome not to abstraction but to a personal, gracious Lord. Freedom from attachment to results comes from trust — the devotee acts wholeheartedly because the fruit is not theirs to hold, but the Lord's to receive.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary — Bhakti-informed reading (illustrative interpretive gloss, not a specific historical commentator's words)",
+    traditionTags: ["Vaishnavism", "general"],
+  },
+  {
+    title: "The eternal self — an Advaita-informed reading",
+    sourceWork: "Bhagavad Gita",
+    location: "2.20",
+    language: "English (paraphrase)",
+    translationText:
+      "Read through an Advaita lens, 'the self that is never born nor dies' is Atman, which Advaita holds to be non-different from Brahman, the one changeless reality underlying all appearances. Birth and death belong only to the body-mind; the Self was never limited by them to begin with.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary — Advaita-informed reading (illustrative interpretive gloss, not a specific historical commentator's words)",
+    traditionTags: ["Advaita", "Vedanta"],
+  },
+  {
+    title: "The eternal self — a Dvaita-informed reading",
+    sourceWork: "Bhagavad Gita",
+    location: "2.20",
+    language: "English (paraphrase)",
+    translationText:
+      "Read through a Dvaita (dualist) lens, the verse affirms that the individual soul (jiva) is eternal and distinct — it survives the body's death, but remains forever a real, particular self in loving relationship with the Supreme, rather than dissolving into an undifferentiated absolute.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary — Dvaita-informed reading (illustrative interpretive gloss, not a specific historical commentator's words)",
+    traditionTags: ["Vaishnavism", "general"],
+  },
+  {
+    title: "Surrender as the final teaching — a Vaishnava (Bhakti) reading",
+    sourceWork: "Bhagavad Gita",
+    location: "18.66",
+    language: "English (paraphrase)",
+    translationText:
+      "In the Vaishnava devotional tradition, this closing verse (often called the charama-shloka, 'final verse') is read as Krishna's direct invitation to surrender (sharanagati) to him as the personal Supreme — the culmination of the Gita's teaching, prized especially in Vaishnava schools as the essence of devotional practice.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary — Vaishnava (Bhakti)-informed reading (illustrative interpretive gloss, not a specific historical commentator's words)",
+    traditionTags: ["Vaishnavism"],
+  },
+  {
+    title: "Surrender as the final teaching — an Advaita-informed reading",
+    sourceWork: "Bhagavad Gita",
+    location: "18.66",
+    language: "English (paraphrase)",
+    translationText:
+      "Read through an Advaita lens, 'taking refuge' is reinterpreted as abandoning the sense of being a separate, effort-making agent altogether — a final pointer toward recognizing one's identity with Brahman, beyond the need for any further path or practice, rather than surrender to a personal deity as such.",
+    sourceType: "paraphrase_summary",
+    attribution: "VedVani summary — Advaita-informed reading (illustrative interpretive gloss, not a specific historical commentator's words)",
+    traditionTags: ["Advaita", "Vedanta"],
+  },
+
 ];
+
+type SeedEntity = {
+  name: string;
+  entityType: "deity" | "concept" | "place" | "person";
+  slug: string;
+  traditionScopedDescriptions: { tradition: string; description: string }[];
+  relatedPassageTitleContains: string[];
+};
+
+/**
+ * Phase 7 knowledge-graph seed. Each entity carries multiple
+ * tradition-scoped descriptions rather than one "universal" description,
+ * following the same non-sectarian-ranking principle used elsewhere in
+ * VedVani: traditions are presented side by side, none as "correct".
+ * relatedPassageTitleContains uses the same pragmatic substring-match
+ * pattern as LEARNING_PATHS in src/lib/learningPaths.ts.
+ */
+const entities: SeedEntity[] = [
+  {
+    name: "Brahman",
+    entityType: "concept",
+    slug: "brahman",
+    traditionScopedDescriptions: [
+      {
+        tradition: "Advaita Vedanta",
+        description:
+          "The one, non-dual, attributeless (nirguna) ultimate reality. All apparent multiplicity, including the individual self, is ultimately identical with Brahman; difference is a matter of appearance (maya), not final truth.",
+      },
+      {
+        tradition: "Vishishtadvaita Vedanta",
+        description:
+          "The ultimate reality, but understood as 'qualified non-dual' (vishishta-advaita): Brahman is a personal, attribute-possessing (saguna) Supreme Being (identified with Vishnu/Narayana), of whom individual souls and the world are real, eternal modes or attributes — related to Brahman as body to soul, not identical with it.",
+      },
+      {
+        tradition: "Dvaita Vedanta",
+        description:
+          "The Supreme Being, eternally and irreducibly distinct from individual souls and the material world. Brahman (identified with Vishnu) is the sole independent reality on whom all dependent souls and matter rely, but souls never become identical with Brahman even in liberation.",
+      },
+    ],
+    relatedPassageTitleContains: ["Brahman", "Aham Brahmasmi", "Tat Tvam Asi"],
+  },
+  {
+    name: "Atman",
+    entityType: "concept",
+    slug: "atman",
+    traditionScopedDescriptions: [
+      {
+        tradition: "Advaita Vedanta",
+        description:
+          "The true Self, which Advaita holds to be non-different from Brahman itself — eternal, unchanging consciousness, mistakenly identified with the body and mind due to ignorance (avidya).",
+      },
+      {
+        tradition: "Samkhya-Yoga",
+        description:
+          "Referred to as purusha: pure, changeless consciousness, distinct in each being, and fundamentally separate from prakriti (material nature, including body and mind). Liberation is the clear discernment of this distinction.",
+      },
+      {
+        tradition: "Vaishnava (Dvaita/Vishishtadvaita)",
+        description:
+          "The individual soul (jivatman), eternally real and personal, existing in a relationship of loving dependence on the Supreme (Brahman/Vishnu) rather than being identical with it.",
+      },
+    ],
+    relatedPassageTitleContains: ["self is never born", "chariot analogy", "Two birds on one tree", "This Self is Brahman"],
+  },
+  {
+    name: "Krishna",
+    entityType: "deity",
+    slug: "krishna",
+    traditionScopedDescriptions: [
+      {
+        tradition: "Vaishnavism",
+        description:
+          "Worshipped as a full avatara (or, in some Vaishnava schools, the source of all avataras) of Vishnu — the Supreme Personality of Godhead who teaches Arjuna the Bhagavad Gita and is the object of devotional practice (bhakti).",
+      },
+      {
+        tradition: "Advaita Vedanta",
+        description:
+          "Understood as the Gita's teacher figure representing Brahman appearing with form (saguna Brahman) for the sake of instruction, while the highest teaching he gives points beyond form to the attributeless (nirguna) non-dual reality.",
+      },
+    ],
+    relatedPassageTitleContains: ["Krishna on periodic divine descent", "devotee dear to the divine"],
+  },
+  {
+    name: "Vishnu",
+    entityType: "deity",
+    slug: "vishnu",
+    traditionScopedDescriptions: [
+      {
+        tradition: "Vaishnavism",
+        description:
+          "The Supreme, preserving deity of the trimurti, worshipped as the ultimate personal God who periodically descends as avataras (including Rama and Krishna) to protect dharma.",
+      },
+      {
+        tradition: "Smarta / pluralistic Hindu view",
+        description:
+          "One of the principal deities honored within the panchayatana system of worship, seen as one valid form through which the single divine reality may be approached alongside Shiva, Devi, Ganesha, and Surya.",
+      },
+    ],
+    relatedPassageTitleContains: ["Krishna on periodic divine descent", "Surrender as the final teaching"],
+  },
+  {
+    name: "Shiva",
+    entityType: "deity",
+    slug: "shiva",
+    traditionScopedDescriptions: [
+      {
+        tradition: "Shaivism",
+        description:
+          "Worshipped as the Supreme reality itself — simultaneously the destroyer within the trimurti and, in Shaiva theology, the ultimate ground of all existence, transcending and including creation and dissolution.",
+      },
+      {
+        tradition: "Smarta / pluralistic Hindu view",
+        description:
+          "One of the five principal deities of panchayatana worship, honored as one legitimate form of approach to the single divine reality alongside Vishnu, Devi, Ganesha, and Surya.",
+      },
+    ],
+    relatedPassageTitleContains: ["devotee dear to the divine"],
+  },
+  {
+    name: "Purusha",
+    entityType: "concept",
+    slug: "purusha",
+    traditionScopedDescriptions: [
+      {
+        tradition: "Samkhya",
+        description:
+          "Pure, plural, changeless consciousness — one of the two fundamental principles (alongside prakriti, material nature). Each being's purusha is distinct.",
+      },
+      {
+        tradition: "Vedic (Purusha Sukta)",
+        description:
+          "The cosmic being described in the Rigveda's Purusha Sukta, whose symbolic sacrifice and dismemberment is described as giving rise to the universe and to human society's varnas.",
+      },
+    ],
+    relatedPassageTitleContains: ["Purusha Sukta"],
+  },
+  {
+    name: "Dharma",
+    entityType: "concept",
+    slug: "dharma",
+    traditionScopedDescriptions: [
+      {
+        tradition: "Purva Mimamsa",
+        description:
+          "Right action as defined by and known through Vedic ritual injunction — dharma is fundamentally about correctly performing prescribed duties and rites.",
+      },
+      {
+        tradition: "General / pluralistic Hindu ethical view",
+        description:
+          "A person's righteous duty or way of being in right relationship with the cosmic order, understood contextually (svadharma) according to one's role, stage of life, and circumstances, and central to the Bhagavad Gita's ethical teaching to Arjuna.",
+      },
+    ],
+    relatedPassageTitleContains: ["Krishna on periodic divine descent", "Purva Mimamsa", "Arjuna's despair"],
+  },
+  {
+    name: "Karma",
+    entityType: "concept",
+    slug: "karma",
+    traditionScopedDescriptions: [
+      {
+        tradition: "Karma Yoga (Bhagavad Gita)",
+        description:
+          "Both the general law of action and consequence, and — as karma yoga — a spiritual path of performing one's duty without attachment to the fruits of action, offered as one of the Gita's principal routes to liberation.",
+      },
+      {
+        tradition: "Purva Mimamsa",
+        description:
+          "Chiefly understood in terms of ritual action (karma-kanda): the correct performance of Vedic rites generates their prescribed results, and right conduct of these rites is itself central to dharma.",
+      },
+    ],
+    relatedPassageTitleContains: ["action without attachment", "Three paths: knowledge, action, devotion"],
+  },
+  {
+    name: "Moksha",
+    entityType: "concept",
+    slug: "moksha",
+    traditionScopedDescriptions: [
+      {
+        tradition: "Advaita Vedanta",
+        description:
+          "Liberation understood as the direct realization that one's true Self (Atman) is not different from Brahman — the dissolution of the ignorance that gives rise to the sense of separateness, not literally 'going' anywhere.",
+      },
+      {
+        tradition: "Vaishnava (Dvaita/Vishishtadvaita)",
+        description:
+          "Liberation understood as the soul's eternal, loving, personal communion with the Supreme (Vishnu) in a divine abode — real, blissful relationship rather than dissolution of individual identity.",
+      },
+      {
+        tradition: "Yoga",
+        description:
+          "Kaivalya — the isolation of purusha (pure consciousness) from prakriti (material nature) achieved through disciplined practice, stilling the fluctuations of the mind.",
+      },
+    ],
+    relatedPassageTitleContains: ["Yoga — the school of disciplined practice", "self is Brahman"],
+  },
+  {
+    name: "Yajna",
+    entityType: "concept",
+    slug: "yajna",
+    traditionScopedDescriptions: [
+      {
+        tradition: "Purva Mimamsa / Vedic ritualism",
+        description:
+          "Sacrifice/ritual offering, understood as an eternally efficacious, prescribed action whose correct performance is central to fulfilling Vedic dharma and maintaining cosmic order.",
+      },
+      {
+        tradition: "Bhagavad Gita (Karma Yoga reading)",
+        description:
+          "Reinterpreted beyond literal ritual fire-offerings to include any action performed selflessly, as an offering, without attachment to personal gain — 'yajna' as a spirit in which all work can be done.",
+      },
+    ],
+    relatedPassageTitleContains: ["Purva Mimamsa", "action without attachment"],
+  },
+  {
+    name: "Om (Aum)",
+    entityType: "concept",
+    slug: "om-aum",
+    traditionScopedDescriptions: [
+      {
+        tradition: "Vedanta / Upanishadic view",
+        description:
+          "The primordial sacred syllable said to represent Brahman itself in sound form — the object of meditation held in several Upanishads to symbolize the totality of waking, dreaming, deep sleep, and the fourth, transcendent state.",
+      },
+      {
+        tradition: "General devotional/ritual use",
+        description:
+          "Chanted at the start and close of prayers, mantras, and rituals across nearly all Hindu traditions as an auspicious invocation, regardless of one's particular theological school.",
+      },
+    ],
+    relatedPassageTitleContains: ["Nasadiya Sukta", "This Self is Brahman"],
+  },
+  {
+    name: "Maya",
+    entityType: "concept",
+    slug: "maya",
+    traditionScopedDescriptions: [
+      {
+        tradition: "Advaita Vedanta",
+        description:
+          "The beginningless cosmic power of appearance that makes the one non-dual Brahman seem to appear as the manifold world and separate selves; not ultimately real in the way Brahman is, though not simply 'nothing' either.",
+      },
+      {
+        tradition: "Vaishnava (Vishishtadvaita/Dvaita)",
+        description:
+          "Reinterpreted less as a veiling illusion and more as the Supreme's own real, wondrous creative power (often linked to the goddess Lakshmi/Shakti) by which a genuinely real world and souls are brought forth — the world's reality is affirmed, not denied.",
+      },
+    ],
+    relatedPassageTitleContains: ["self is Brahman", "That art thou"],
+  },
+];
+
+async function seedKnowledgeEntities() {
+  const existing = await prisma.knowledgeEntity.count();
+  if (existing >= entities.length) {
+    console.log(`Knowledge entities already has ${existing} rows (>= ${entities.length}) — skipping seed.`);
+    return;
+  }
+  if (existing > 0) {
+    console.log(`Knowledge entities has ${existing} rows, expected ${entities.length} — resetting and reseeding.`);
+    await prisma.knowledgeEntity.deleteMany({});
+  }
+  console.log(`Seeding ${entities.length} knowledge entities...`);
+  for (const e of entities) {
+    await prisma.knowledgeEntity.create({ data: e });
+  }
+  console.log("Knowledge entity seed complete.");
+}
 
 async function main() {
   const existing = await prisma.corpusPassage.count();
   if (existing >= passages.length) {
     console.log(`Corpus already has ${existing} passages (>= ${passages.length}) — skipping seed.`);
-    return;
+  } else {
+    if (existing > 0) {
+      console.log(`Corpus has ${existing} passages, expected ${passages.length} — resetting and reseeding.`);
+      await prisma.corpusPassage.deleteMany({});
+    }
+    console.log(`Seeding ${passages.length} corpus passages...`);
+    for (const p of passages) {
+      await prisma.corpusPassage.create({ data: p });
+    }
+    console.log("Seed complete.");
   }
-  if (existing > 0) {
-    console.log(`Corpus has ${existing} passages, expected ${passages.length} — resetting and reseeding.`);
-    await prisma.corpusPassage.deleteMany({});
-  }
-  console.log(`Seeding ${passages.length} corpus passages...`);
-  for (const p of passages) {
-    await prisma.corpusPassage.create({ data: p });
-  }
-  console.log("Seed complete.");
+
+  await seedKnowledgeEntities();
 }
 
 main()

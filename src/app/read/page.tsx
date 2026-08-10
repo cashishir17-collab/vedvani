@@ -1,8 +1,12 @@
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { LOCALE_COOKIE_NAME, isLocale, t } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReadIndexPage() {
+  const cookieLocale = cookies().get(LOCALE_COOKIE_NAME)?.value;
+  const locale = isLocale(cookieLocale) ? cookieLocale : "en";
   const passages = await prisma.corpusPassage.findMany({ orderBy: [{ sourceWork: "asc" }, { title: "asc" }] });
 
   const grouped = new Map<string, typeof passages>();
@@ -15,8 +19,8 @@ export default async function ReadIndexPage() {
   return (
     <div>
       <div className="card">
-        <h2 style={{ marginTop: 0 }}>Read the Scripture Library</h2>
-        <p className="muted">Browse all passages, grouped by source work.</p>
+        <h2 style={{ marginTop: 0 }}>{t(locale, "readTitle")}</h2>
+        <p className="muted">{t(locale, "readIntro")}</p>
       </div>
       {Array.from(grouped.entries()).map(([sourceWork, list]) => (
         <div className="card" key={sourceWork}>

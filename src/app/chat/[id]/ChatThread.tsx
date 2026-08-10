@@ -1,6 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { LOCALE_COOKIE_NAME, isLocale, t, type Locale } from "@/lib/i18n";
+import ResponseModeSelect, { type ResponseMode } from "../../ResponseModeSelect";
+
+function readLocaleCookie(): Locale {
+  if (typeof document === "undefined") return "en";
+  const match = document.cookie.match(new RegExp(`${LOCALE_COOKIE_NAME}=([^;]+)`));
+  const val = match?.[1];
+  return isLocale(val) ? val : "en";
+}
 
 type Citation = {
   id: string;
@@ -36,8 +45,14 @@ export default function ChatThread({
   const [listening, setListening] = useState(false);
   const [ttsAvailable, setTtsAvailable] = useState(true);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [locale, setLocale] = useState<Locale>("en");
+  const [responseMode, setResponseMode] = useState<ResponseMode>("detailed");
   const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    setLocale(readLocaleCookie());
+  }, []);
 
   useEffect(() => {
     const SpeechRecognition =
@@ -80,7 +95,7 @@ export default function ChatThread({
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId, message: userText }),
+        body: JSON.stringify({ conversationId, message: userText, responseMode }),
       });
       const data = await res.json();
       setMessages((prev) => [
@@ -183,14 +198,15 @@ export default function ChatThread({
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
-        <div className="composer-row" style={{ marginTop: 10 }}>
+        <div className="composer-row" style={{ marginTop: 10, alignItems: "center" }}>
+          <ResponseModeSelect locale={locale} value={responseMode} onChange={setResponseMode} />
           {micSupported && (
             <button type="button" className="secondary" onClick={toggleMic}>
-              {listening ? "Stop mic" : "Mic"}
+              {listening ? t(locale, "stopMic") : t(locale, "mic")}
             </button>
           )}
           <button type="button" onClick={send} disabled={loading || !text.trim()}>
-            {loading ? "Sending..." : "Send"}
+            {loading ? t(locale, "sending") : t(locale, "send")}
           </button>
         </div>
       </div>

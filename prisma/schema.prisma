@@ -51,6 +51,9 @@ model Message {
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   role           String   // "user" | "assistant"
   content        String   @db.Text
+  // Phase 6: response style used when generating this assistant message
+  // (BRD FR-CHAT-006): "concise" | "detailed" | "child-friendly" | "academic" | "devotional"
+  responseMode   String   @default("detailed")
   createdAt      DateTime @default(now())
 
   citations Citation[]
@@ -125,4 +128,22 @@ model UserReport {
   note           String   @db.Text
   status         String   @default("open") // "open" | "resolved"
   createdAt      DateTime @default(now())
+}
+
+// Phase 7: lightweight knowledge graph — entity pages with tradition-scoped
+// descriptions (no single "universal" description per BRD pluralism rule),
+// plus a pragmatic substring-match link to related CorpusPassage rows,
+// mirroring the same pattern used by learningPaths.ts.
+model KnowledgeEntity {
+  id                          String   @id @default(uuid())
+  name                        String
+  entityType                  String   // "deity" | "concept" | "place" | "person"
+  slug                        String   @unique
+  // Array of { tradition: string, description: string } — same entity can
+  // have multiple, clearly-labeled tradition-scoped descriptions.
+  traditionScopedDescriptions Json
+  // Substrings matched against CorpusPassage.title / translationText to
+  // surface "related passages" without needing hand-maintained foreign keys.
+  relatedPassageTitleContains String[]
+  createdAt                   DateTime @default(now())
 }

@@ -213,6 +213,76 @@ added — this only relies on Postgres built-ins.
   curl -b "<your admin session cookie>" http://localhost:3000/api/eval
   ```
 
+## Phase 6–8: Hindi locale toggle, response modes, knowledge graph, commentary comparison
+
+**Phase 6 — Hindi UI toggle + response modes**
+- `src/lib/i18n.ts` defines a plain `en`/`hi` dictionary of chrome strings
+  (nav labels, headers, buttons) and a `t(locale, key)` helper. This covers
+  nav/headers/buttons only — full page body content (chat answers, corpus
+  text, learning path descriptions) is **not** translated; that's future
+  work (see comment at top of `i18n.ts`).
+- Locale is stored in a plain (non-httpOnly) `vv_locale` cookie, set via
+  `POST /api/locale` (`src/app/api/locale/route.ts`, body `{ locale }`).
+  `src/app/LocaleToggle.tsx` is a small client button in the nav
+  (`src/app/layout.tsx`) that flips the cookie and calls `router.refresh()`.
+  Server components (`layout.tsx`, `/read`, `/learn`, `/bookmarks`,
+  `/history`, `/memory`, `/admin`) read the cookie directly via
+  `cookies()` and render translated headers; the client-rendered `/` and
+  `/chat/[id]` composers read the same cookie via `document.cookie` on
+  mount.
+- Response modes (BRD FR-CHAT-006): `src/app/ResponseModeSelect.tsx` is a
+  shared dropdown (concise | detailed | child-friendly | academic |
+  devotional) used by both the home composer and `ChatThread.tsx`. The
+  chosen mode is sent as `responseMode` in the `POST /api/chat` body,
+  validated with `isResponseMode()`, and threaded into `runChatTurn()` in
+  `src/lib/chat.ts`, where `RESPONSE_MODE_INSTRUCTIONS[mode]` is appended to
+  the system prompt (e.g. concise = "2-3 sentences max"; child-friendly =
+  simple words/short sentences/warm tone; academic = precise terminology;
+  devotional = warmer/reverent but still cited; detailed = current
+  default). `Message.responseMode` (new `String @default("detailed")`
+  column) records which mode produced each assistant message.
+
+**Phase 7 — Entity pages + basic knowledge graph**
+- New `KnowledgeEntity` model: `name`, `entityType` ("deity" | "concept" |
+  "place" | "person"), unique `slug`, `traditionScopedDescriptions` (Json
+  array of `{ tradition, description }` — deliberately an array, not a
+  single field, so the same entity can carry multiple, clearly-labeled,
+  non-ranked tradition-specific descriptions), and
+  `relatedPassageTitleContains` (substrings matched against
+  `CorpusPassage.title`/`translationText`, the same pragmatic pattern
+  `learningPaths.ts` uses).
+- `prisma/seed.ts` seeds 12 entities (Brahman, Atman, Krishna, Vishnu,
+  Shiva, Purusha, Dharma, Karma, Moksha, Yajna, Om/Aum, Maya), each with
+  2–3 tradition-scoped descriptions written neutrally (e.g. Brahman's
+  Advaita, Vishishtadvaita, and Dvaita descriptions are given as separate,
+  equally-labeled entries — none presented as the "correct" one).
+- `/entities` groups all entities by `entityType`; `/entities/[slug]` shows
+  every tradition-scoped description clearly separated by tradition label,
+  plus a "Related passages" section built from `relatedPassageTitleContains`
+  substring matches, linking to `/read/[id]`.
+- `/read/[id]` now shows a small "Related: [entity links]" line when any
+  `KnowledgeEntity.name` appears as a substring of that passage's title or
+  translation text.
+
+**Phase 8 — Commentary comparison view**
+- 6 new `CorpusPassage` rows were added deliberately as alternate
+  interpretive layers of 3 already-seeded, well-known Gita verses (2.47,
+  2.20, 18.66) — e.g. an Advaita-informed reading and a Bhakti/Dvaita-
+  informed reading of the same verse+location. All are `sourceType:
+  "paraphrase_summary"`, attributed as `"VedVani summary — <tradition>-
+  informed reading"`, and the seed file explicitly comments that these are
+  VedVani's own illustrative interpretive glosses, **not** claims about
+  what any specific named historical commentator wrote.
+- `/read/[id]/compare` looks up every other `CorpusPassage` sharing the
+  same `sourceWork`+`location` and shows them in a responsive card grid
+  (stacks to one column on mobile), each card labeled with its
+  `sourceType` badge, tradition tags, and attribution. If no siblings
+  exist, it shows "No alternate readings in our library yet for this
+  verse." instead of an empty page.
+- `/read/[id]` shows a "Compare interpretations" link only when sibling
+  rows actually exist (checked via `prisma.corpusPassage.count()` at
+  render time).
+
 ### Sandbox note on Prisma types
 
 `npm run build` normally runs `prisma generate` first, which needs to
@@ -224,7 +294,9 @@ typed model shapes (`User`, `CorpusPassage`, `Bookmark`, `UserReport`,
 etc.) and a typed `PrismaClient`/`Prisma.sql`, matching `prisma/schema.prisma`
 field-for-field, so the app still gets real typechecking without a working
 network connection. In a normal environment, `npx prisma generate` will
-overwrite this stub with the real generated client as usual.
+overwrite this stub with the real generated client as usual. Phase 6–8
+extended the same hand-written stub again to add `Message.responseMode`
+and the new `KnowledgeEntity` model/delegate.
 
 ## Project structure
 

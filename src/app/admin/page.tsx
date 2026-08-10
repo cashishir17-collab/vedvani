@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { resolveAdminSession } from "@/lib/adminAuth";
+import { LOCALE_COOKIE_NAME, isLocale, t } from "@/lib/i18n";
 import PassageReviewRow from "./PassageReviewRow";
 import ReportRow from "./ReportRow";
 
@@ -11,6 +13,8 @@ export default async function AdminPage() {
   if (!isAdmin) {
     redirect("/");
   }
+  const cookieLocale = cookies().get(LOCALE_COOKIE_NAME)?.value;
+  const locale = isLocale(cookieLocale) ? cookieLocale : "en";
 
   const [passages, reports] = await Promise.all([
     prisma.corpusPassage.findMany({ orderBy: { title: "asc" } }),
@@ -20,7 +24,7 @@ export default async function AdminPage() {
   return (
     <div>
       <div className="card">
-        <h2 style={{ marginTop: 0 }}>Admin — Editorial Console</h2>
+        <h2 style={{ marginTop: 0 }}>{t(locale, "adminTitle")}</h2>
         <p className="muted">Review corpus passages and resolve user reports.</p>
       </div>
 

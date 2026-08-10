@@ -74,6 +74,33 @@ I'm not able to provide the kind of support you deserve here — please consider
 
 You don't have to go through this alone, and reaching out for help is a sign of strength, not weakness. I'll be here if you want to talk about scripture or tradition another time, but right now, please take care of yourself first.`;
 
+// ---------------------------------------------------------------------------
+// Response modes (Phase 6 / BRD FR-CHAT-006). Adjusts the system prompt's
+// style instructions; does not change the hard grounding/citation rules
+// above, which always apply.
+// ---------------------------------------------------------------------------
+
+export type ResponseMode = "concise" | "detailed" | "child-friendly" | "academic" | "devotional";
+
+export const RESPONSE_MODES: ResponseMode[] = ["concise", "detailed", "child-friendly", "academic", "devotional"];
+
+export function isResponseMode(value: unknown): value is ResponseMode {
+  return typeof value === "string" && (RESPONSE_MODES as string[]).includes(value);
+}
+
+const RESPONSE_MODE_INSTRUCTIONS: Record<ResponseMode, string> = {
+  detailed:
+    "Response style: detailed (default). Give a thorough, well-organized answer with enough context for a curious general reader.",
+  concise:
+    "Response style: concise. Answer in 2-3 sentences maximum. Be direct, skip preamble, and still cite sources inline.",
+  "child-friendly":
+    "Response style: child-friendly. Use simple words, short sentences, and a warm, encouraging tone suitable for a curious child (roughly age 8-12). Avoid jargon; briefly explain any Sanskrit terms you use. Keep citations, but explain them simply.",
+  academic:
+    "Response style: academic. Use precise terminology, note textual/historical context where relevant, and where appropriate reference the kind of scholarship or commentarial tradition that would discuss this point. Maintain a formal, careful register.",
+  devotional:
+    "Response style: devotional. Use a warmer, more reverent tone that honors the material as living tradition, while still being precise about sourcing and still including citations and the same honesty about synthesis vs. scripture vs. tradition.",
+};
+
 const CAVEAT_INSTRUCTION = `\n\nAdditional safety instruction for this response: The user's question touches on a sensitive area (deterministic predictions, ritual/fasting practice combined with a medical condition, or the scriptural status of caste/gender hierarchy). You must explicitly decline to make deterministic or certain claims (e.g. about fate, death, marriage, wealth, or medical safety). Name that Hindu traditions hold a plurality of views on this topic rather than one settled answer. Add clear safety caveats (e.g. recommend consulting a doctor before altering fasting/diet with a medical condition; note that historical caste/gender hierarchy is a matter of active ethical and scholarly debate, and that many modern teachers and traditions explicitly reject discriminatory readings). Do not validate discrimination as scripturally mandated.`;
 
 function buildContextBlock(passages: CorpusPassage[]) {
@@ -159,9 +186,11 @@ export async function runChatTurn(params: {
   conversationId?: string;
   sessionOwner: { type: "user"; userId: string } | { type: "guest"; guestId: string };
   persist?: boolean;
+  responseMode?: ResponseMode;
 }): Promise<ChatTurnResult> {
   const { message, sessionOwner } = params;
   const persist = params.persist !== false;
+  const responseMode: ResponseMode = isResponseMode(params.responseMode) ? params.responseMode : "detailed";
 
   const safety = classifyMessageSafety(message);
 
@@ -203,7 +232,7 @@ export async function runChatTurn(params: {
   const passages = await retrievePassages(message);
   const contextBlock = buildContextBlock(passages);
 
-  let systemPrompt = SYSTEM_PROMPT;
+  let systemPrompt = SYSTEM_PROMPT + "\n\n" + RESPONSE_MODE_INSTRUCTIONS[responseMode];
   if (safety.astrologyDeterminism || safety.unsafeRitualMedical || safety.discriminationValidation) {
     systemPrompt += CAVEAT_INSTRUCTION;
   }
@@ -237,7 +266,7 @@ export async function runChatTurn(params: {
 
   if (persist && conversationId) {
     const assistantMessage = await prisma.message.create({
-      data: { conversationId, role: "assistant", content: answer },
+      data: { conversationId, role: "assistant", content: answer, responseMode },
     });
 
     const citations = await Promise.all(

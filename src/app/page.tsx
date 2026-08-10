@@ -2,6 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { LOCALE_COOKIE_NAME, isLocale, t, type Locale } from "@/lib/i18n";
+import ResponseModeSelect, { type ResponseMode } from "./ResponseModeSelect";
+
+function readLocaleCookie(): Locale {
+  if (typeof document === "undefined") return "en";
+  const match = document.cookie.match(new RegExp(`${LOCALE_COOKIE_NAME}=([^;]+)`));
+  const val = match?.[1];
+  return isLocale(val) ? val : "en";
+}
 
 export default function HomePage() {
   const router = useRouter();
@@ -9,7 +18,13 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [micSupported, setMicSupported] = useState(false);
   const [listening, setListening] = useState(false);
+  const [locale, setLocale] = useState<Locale>("en");
+  const [responseMode, setResponseMode] = useState<ResponseMode>("detailed");
   const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    setLocale(readLocaleCookie());
+  }, []);
 
   useEffect(() => {
     const SpeechRecognition =
@@ -47,7 +62,7 @@ export default function HomePage() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text.trim() }),
+        body: JSON.stringify({ message: text.trim(), responseMode }),
       });
       const data = await res.json();
       if (data.conversationId) {
@@ -61,12 +76,8 @@ export default function HomePage() {
   return (
     <div>
       <div className="card">
-        <h1 style={{ marginTop: 0 }}>VedVani</h1>
-        <p className="muted">
-          Ask about the Vedas, Upanishads, Bhagavad Gita, or Puranas. Answers are grounded in a
-          cited, public-domain corpus and clearly label synthesis vs. scripture vs. tradition.
-          VedVani never claims divine authority and stays neutral across sampradayas.
-        </p>
+        <h1 style={{ marginTop: 0 }}>{t(locale, "homeTitle")}</h1>
+        <p className="muted">{t(locale, "homeIntro")}</p>
       </div>
       <div className="card">
         <textarea
@@ -75,14 +86,15 @@ export default function HomePage() {
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
-        <div className="composer-row" style={{ marginTop: 10 }}>
+        <div className="composer-row" style={{ marginTop: 10, alignItems: "center" }}>
+          <ResponseModeSelect locale={locale} value={responseMode} onChange={setResponseMode} />
           {micSupported && (
             <button type="button" className="secondary" onClick={toggleMic}>
-              {listening ? "Stop mic" : "Mic"}
+              {listening ? t(locale, "stopMic") : t(locale, "mic")}
             </button>
           )}
           <button type="button" onClick={submit} disabled={loading || !text.trim()}>
-            {loading ? "Asking..." : "Ask VedVani"}
+            {loading ? t(locale, "asking") : t(locale, "askVedVani")}
           </button>
         </div>
       </div>
