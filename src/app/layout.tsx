@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { resolveSession } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "VedVani",
   description: "Ask about Hindu scripture and tradition, grounded in cited sources.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await resolveSession();
+
   return (
     <html lang="en">
       <body>
@@ -17,6 +22,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <a href="/">Ask</a>
               <a href="/history">History</a>
               <a href="/memory">Memory</a>
+              {session.type === "user" ? (
+                <>
+                  <span className="muted">{session.email}</span>
+                  <a href="/api/auth/logout">Log out</a>
+                </>
+              ) : (
+                <>
+                  <span className="muted">Guest</span>
+                  <a href="/login">Log in</a>
+                </>
+              )}
             </nav>
           </header>
           <main className="app-main">{children}</main>

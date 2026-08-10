@@ -17,10 +17,21 @@ model GuestSession {
   memoryItems   MemoryItem[]
 }
 
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  conversations Conversation[]
+  memoryItems   MemoryItem[]
+}
+
 model Conversation {
   id             String   @id @default(uuid())
-  guestSessionId String
-  guestSession   GuestSession @relation(fields: [guestSessionId], references: [id])
+  guestSessionId String?
+  guestSession   GuestSession? @relation(fields: [guestSessionId], references: [id])
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id])
   title          String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -28,6 +39,7 @@ model Conversation {
   messages Message[]
 
   @@index([guestSessionId])
+  @@index([userId])
 }
 
 model Message {
@@ -74,10 +86,13 @@ model CorpusPassage {
 
 model MemoryItem {
   id             String   @id @default(uuid())
-  guestSessionId String
-  guestSession   GuestSession @relation(fields: [guestSessionId], references: [id])
+  guestSessionId String?
+  guestSession   GuestSession? @relation(fields: [guestSessionId], references: [id])
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id])
   content        String   @db.Text
   createdAt      DateTime @default(now())
 
   @@index([guestSessionId])
+  @@index([userId])
 }

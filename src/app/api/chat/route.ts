@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getOrCreateGuestSession, GUEST_COOKIE_NAME } from "@/lib/guestSession";
+import { resolveSession, applyGuestCookieIfNeeded } from "@/lib/session";
 import { retrievePassages } from "@/lib/retrieval";
 import { getAnthropicClient, CLAUDE_MODEL } from "@/lib/anthropic";
 
@@ -36,7 +36,7 @@ Text: ${p.translationText}`;
 
 export async function POST(req: NextRequest) {
   try {
-    const { guestSessionId, isNew } = await getOrCreateGuestSession();
+    const session = await resolveSession();
     const body = await req.json();
     const message: string = (body?.message ?? "").toString().trim();
     let conversationId: string | undefined = body?.conversationId;
@@ -51,10 +51,10 @@ export async function POST(req: NextRequest) {
 
     if (!conversation) {
       conversation = await prisma.conversation.create({
-        data: {
-          guestSessionId,
-          title: message.slice(0, 60),
-        },
+        data:
+          session.type === "user"
+            ? { userId: session.userId, title: message.slice(0, 60) }
+            : { guestSessionId: session.guestId, title: message.slice(0, 60) },
       });
     }
     conversationId = conversation.id;
@@ -121,14 +121,7 @@ export async function POST(req: NextRequest) {
       })),
     });
 
-    if (isNew) {
-      res.cookies.set(GUEST_COOKIE_NAME, guestSessionId, {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 365,
-      });
-    }
+    applyGuestCookieIfNeeded(res, session);
 
     return res;
   } catch (err) {

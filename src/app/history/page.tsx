@@ -1,13 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { getOrCreateGuestSession } from "@/lib/guestSession";
+import { resolveSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function HistoryPage() {
-  const { guestSessionId } = await getOrCreateGuestSession();
+  const session = await resolveSession();
 
   const conversations = await prisma.conversation.findMany({
-    where: { guestSessionId },
+    where: session.type === "user" ? { userId: session.userId } : { guestSessionId: session.guestId },
     orderBy: { updatedAt: "desc" },
   });
 

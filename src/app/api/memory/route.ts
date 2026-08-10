@@ -1,31 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getOrCreateGuestSession, GUEST_COOKIE_NAME } from "@/lib/guestSession";
+import { resolveSession, applyGuestCookieIfNeeded } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const { guestSessionId, isNew } = await getOrCreateGuestSession();
+  const session = await resolveSession();
 
   const items = await prisma.memoryItem.findMany({
-    where: { guestSessionId },
+    where: session.type === "user" ? { userId: session.userId } : { guestSessionId: session.guestId },
     orderBy: { createdAt: "desc" },
   });
 
   const res = NextResponse.json({ items });
-  if (isNew) {
-    res.cookies.set(GUEST_COOKIE_NAME, guestSessionId, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365,
-    });
-  }
+  applyGuestCookieIfNeeded(res, session);
   return res;
 }
 
 export async function POST(req: NextRequest) {
-  const { guestSessionId, isNew } = await getOrCreateGuestSession();
+  const session = await resolveSession();
   const body = await req.json();
   const content: string = (body?.content ?? "").toString().trim();
 
@@ -34,23 +27,19 @@ export async function POST(req: NextRequest) {
   }
 
   const item = await prisma.memoryItem.create({
-    data: { guestSessionId, content },
+    data:
+      session.type === "user"
+        ? { userId: session.userId, content }
+        : { guestSessionId: session.guestId, content },
   });
 
   const res = NextResponse.json({ item });
-  if (isNew) {
-    res.cookies.set(GUEST_COOKIE_NAME, guestSessionId, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365,
-    });
-  }
+  applyGuestCookieIfNeeded(res, session);
   return res;
 }
 
 export async function DELETE(req: NextRequest) {
-  const { guestSessionId } = await getOrCreateGuestSession();
+  const session = await resolveSession();
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
@@ -59,7 +48,12 @@ export async function DELETE(req: NextRequest) {
   }
 
   const item = await prisma.memoryItem.findUnique({ where: { id } });
-  if (!item || item.guestSessionId !== guestSessionId) {
+  const owns =
+    item &&
+    ((session.type === "user" && item.userId === session.userId) ||
+      (session.type === "guest" && item.guestSessionId === session.guestId));
+
+  if (!owns) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 

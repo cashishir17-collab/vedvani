@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getOrCreateGuestSession, GUEST_COOKIE_NAME } from "@/lib/guestSession";
+import { resolveSession, applyGuestCookieIfNeeded } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const { guestSessionId, isNew } = await getOrCreateGuestSession();
+  const session = await resolveSession();
 
   const conversations = await prisma.conversation.findMany({
-    where: { guestSessionId },
+    where: session.type === "user" ? { userId: session.userId } : { guestSessionId: session.guestId },
     orderBy: { updatedAt: "desc" },
     include: { messages: { orderBy: { createdAt: "asc" }, take: 1 } },
   });
@@ -22,14 +22,7 @@ export async function GET() {
     })),
   });
 
-  if (isNew) {
-    res.cookies.set(GUEST_COOKIE_NAME, guestSessionId, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365,
-    });
-  }
+  applyGuestCookieIfNeeded(res, session);
 
   return res;
 }
