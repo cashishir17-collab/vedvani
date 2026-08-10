@@ -27,18 +27,26 @@ type Msg = {
   role: "user" | "assistant";
   content: string;
   citations: Citation[];
+  followups?: string[];
 };
 
 export default function ChatThread({
   conversationId,
   title,
+  pinned: initialPinned,
   initialMessages,
 }: {
   conversationId: string;
   title: string;
+  pinned?: boolean;
   initialMessages: Msg[];
 }) {
   const [messages, setMessages] = useState<Msg[]>(initialMessages);
+  const [threadTitle, setThreadTitle] = useState(title);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(title);
+  const [pinned, setPinned] = useState(!!initialPinned);
+  const [savingMeta, setSavingMeta] = useState(false);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [micSupported, setMicSupported] = useState(false);
@@ -53,6 +61,41 @@ export default function ChatThread({
   useEffect(() => {
     setLocale(readLocaleCookie());
   }, []);
+
+  async function saveTitle() {
+    const nextTitle = titleDraft.trim();
+    setEditingTitle(false);
+    if (!nextTitle || nextTitle === threadTitle) {
+      setTitleDraft(threadTitle);
+      return;
+    }
+    setThreadTitle(nextTitle);
+    setSavingMeta(true);
+    try {
+      await fetch(`/api/conversations/${conversationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: nextTitle }),
+      });
+    } finally {
+      setSavingMeta(false);
+    }
+  }
+
+  async function togglePinned() {
+    const next = !pinned;
+    setPinned(next);
+    setSavingMeta(true);
+    try {
+      await fetch(`/api/conversations/${conversationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pinned: next }),
+      });
+    } finally {
+      setSavingMeta(false);
+    }
+  }
 
   useEffect(() => {
     const SpeechRecognition =
@@ -105,6 +148,7 @@ export default function ChatThread({
           role: "assistant",
           content: data.answer ?? "Something went wrong.",
           citations: data.citations ?? [],
+          followups: data.followups ?? [],
         },
       ]);
     } finally {
@@ -149,7 +193,39 @@ export default function ChatThread({
   return (
     <div>
       <div className="card">
-        <h2 style={{ marginTop: 0 }}>{title}</h2>
+        <div className="row-between" style={{ alignItems: "center" }}>
+          {editingTitle ? (
+            <input
+              type="text"
+              value={titleDraft}
+              autoFocus
+              onChange={(e) => setTitleDraft(e.target.value)}
+              onBlur={saveTitle}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveTitle();
+                if (e.key === "Escape") {
+                  setTitleDraft(threadTitle);
+                  setEditingTitle(false);
+                }
+              }}
+              style={{ fontSize: "1.25rem", fontWeight: 600 }}
+            />
+          ) : (
+            <h2
+              style={{ marginTop: 0, marginBottom: 0, cursor: "pointer" }}
+              onClick={() => {
+                setTitleDraft(threadTitle);
+                setEditingTitle(true);
+              }}
+              title="Click to rename"
+            >
+              {threadTitle}
+            </h2>
+          )}
+          <button type="button" className="secondary" onClick={togglePinned} disabled={savingMeta}>
+            {pinned ? "Unpin" : "Pin"}
+          </button>
+        </div>
       </div>
       <div>
         {messages.map((m) => (
@@ -173,6 +249,20 @@ export default function ChatThread({
                 <button type="button" className="secondary" onClick={() => reportMessage(m.id)}>
                   Report this answer
                 </button>
+              </div>
+            )}
+            {m.role === "assistant" && m.followups && m.followups.length > 0 && (
+              <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {m.followups.map((f, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className="secondary"
+                    onClick={() => setText(f)}
+                  >
+                    {f}
+                  </button>
+                ))}
               </div>
             )}
             {m.citations.length > 0 && (

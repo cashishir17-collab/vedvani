@@ -42,6 +42,7 @@ export default async function ChatPage({ params }: { params: { id: string } }) {
     <ChatThread
       conversationId={conversation.id}
       title={conversation.title}
+      pinned={conversation.pinned}
       initialMessages={initialMessages}
     />
   );

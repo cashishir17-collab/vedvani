@@ -13,7 +13,13 @@ Hard rules:
 5. When traditions differ (e.g. Advaita vs. Vaishnavism vs. Shaivism vs. Shaktism), present them neutrally, side by side. Never rank one sampradaya as superior to another.
 6. Distinguish clearly between: "Scripture says" (direct primary_text quotation), "Commentary/Tradition holds" (paraphrase_summary or traditional interpretation), "VedVani synthesis" (your own unsourced reasoning), and "Uncertain/disputed" (where scholarship or traditions disagree).
 
-You will be given a list of retrieved passages, each with title, sourceWork, location, translationText, sourceType, attribution, and traditionTags. Ground your answer in these. Keep answers concise, warm, and respectful.`;
+You will be given a list of retrieved passages, each with title, sourceWork, location, translationText, sourceType, attribution, and traditionTags. Ground your answer in these. Keep answers concise, warm, and respectful.
+
+After your answer, on new lines, suggest 2-3 short natural follow-up questions the user might ask next, in exactly this format (nothing else after it):
+FOLLOWUPS:
+1. ...
+2. ...
+3. ...`;
 
 // ---------------------------------------------------------------------------
 // Safety pre-classifier (Phase 5). Lightweight keyword/regex checks, no
@@ -156,9 +162,34 @@ export function verifyCitations(answer: string, passages: CorpusPassage[]): stri
   return answer;
 }
 
+// ---------------------------------------------------------------------------
+// Follow-up question suggestions (Phase 12). The system prompt instructs
+// Claude to end each answer with a "FOLLOWUPS:\n1. ...\n2. ...\n3. ..."
+// block. We strip that block out of the displayed answer text and return
+// the parsed questions separately so the UI can render them as chips.
+// ---------------------------------------------------------------------------
+
+const FOLLOWUPS_BLOCK_PATTERN = /\n*FOLLOWUPS:\s*\n([\s\S]*)$/i;
+
+export function extractFollowups(answer: string): { answer: string; followups: string[] } {
+  const match = answer.match(FOLLOWUPS_BLOCK_PATTERN);
+  if (!match) return { answer, followups: [] };
+
+  const block = match[1];
+  const followups = block
+    .split("\n")
+    .map((line) => line.replace(/^\s*\d+[.)]\s*/, "").trim())
+    .filter(Boolean)
+    .slice(0, 3);
+
+  const cleanedAnswer = answer.slice(0, match.index).trim();
+  return { answer: cleanedAnswer, followups };
+}
+
 export type ChatTurnResult = {
   conversationId: string;
   answer: string;
+  followups: string[];
   citations: Array<{
     id: string;
     title: string;
@@ -226,7 +257,7 @@ export async function runChatTurn(params: {
       });
     }
 
-    return { conversationId: conversationId ?? "", answer, citations: [], safety };
+    return { conversationId: conversationId ?? "", answer, followups: [], citations: [], safety };
   }
 
   const passages = await retrievePassages(message);
@@ -275,6 +306,10 @@ export async function runChatTurn(params: {
 
   answer = verifyCitations(answer, passages);
 
+  const extracted = extractFollowups(answer);
+  answer = extracted.answer;
+  const followups = extracted.followups;
+
   let citationsOut: ChatTurnResult["citations"] = [];
 
   if (persist && conversationId) {
@@ -318,5 +353,5 @@ export async function runChatTurn(params: {
     }));
   }
 
-  return { conversationId: conversationId ?? "", answer, citations: citationsOut, safety };
+  return { conversationId: conversationId ?? "", answer, followups, citations: citationsOut, safety };
 }

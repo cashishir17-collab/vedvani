@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
       const res = NextResponse.json({
         conversationId: result.conversationId,
         answer: result.answer,
+        followups: result.followups,
         citations: result.citations,
       });
 

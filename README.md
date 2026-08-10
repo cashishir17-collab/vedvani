@@ -359,6 +359,90 @@ and the new `KnowledgeEntity` model/delegate.
   admin analytics "requests by path" query), matching the same
   hand-maintained-stub pattern used by every prior phase.
 
+**Phase 12 — Conversation UX polish + threading**
+- Added `pinned Boolean @default(false)` to `Conversation` (`title` already
+  existed from earlier phases and already auto-titled from the first
+  message, so this phase adds explicit rename on top of that).
+- Added `src/app/api/conversations/[id]/route.ts` (`PATCH`) — renames
+  and/or pins/unpins a conversation. Ownership is checked via
+  `resolveSession()` the same way every other route does: the existing
+  row's `userId`/`guestSessionId` must match the caller before the update
+  is allowed, otherwise a 404 is returned (not a 403, to avoid leaking
+  existence of other users' conversations).
+- `src/app/chat/[id]/ChatThread.tsx`: title is now inline-editable (click
+  to edit, blur/Enter to save, Escape to cancel) and there's a Pin/Unpin
+  button, both calling the new PATCH route. `/history`
+  (`src/app/history/page.tsx`) now orders pinned conversations first
+  (`orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }]`) and shows a pin
+  icon next to pinned titles.
+- Follow-up question suggestions: `SYSTEM_PROMPT` in `src/lib/chat.ts` now
+  asks Claude to end every answer with a `FOLLOWUPS:\n1. ...\n2. ...\n3. ...`
+  block. `extractFollowups()` (new, in `src/lib/chat.ts`) strips that block
+  out of the displayed answer and returns it as a separate `followups:
+  string[]` array; `runChatTurn()`'s result and `POST /api/chat`'s JSON
+  response both now carry `followups`. `ChatThread.tsx` renders them as
+  clickable chips under each assistant message that populate the composer
+  textarea when clicked.
+- The composer already had a "Sending..." loading state
+  (`t(locale, "sending")`) disabling the send button while a request is in
+  flight; left as-is per the "don't over-engineer real streaming" guidance
+  — confirmed it covers the perceived-responsiveness requirement.
+
+**Phase 13 — Memory Centre UX (BRD FR-MEM)**
+- Added `category String @default("inferred_preference")` (one of
+  `explicit_fact` | `inferred_preference` | `summary` | `learning_progress`)
+  and `paused Boolean @default(false)` to `MemoryItem`.
+- Added `src/app/api/memory/[id]/route.ts` (`PATCH` for pause/resume/edit,
+  `DELETE`), both ownership-checked via `resolveSession()` against the
+  existing row's `userId`/`guestSessionId`, mirroring the conversations
+  route above.
+- `/memory` (`src/app/memory/page.tsx` + `MemoryList.tsx`) now groups
+  items under category section headers and gives each item its own
+  Pause/Resume and Delete buttons instead of only page-level bulk add/
+  delete. Adding a note now also lets you pick its category.
+- Added `src/lib/memorySafety.ts` — `containsSensitiveContent(text)`, a
+  regex/keyword denylist covering health conditions, caste terms, a
+  date-like + time-like + place-like clustering heuristic for precise
+  birth date+time+location combos, political party names, and intimate/
+  sexual content keywords. `POST /api/memory` now calls this before
+  creating any `MemoryItem` and, if flagged, refuses to store it and
+  `console.warn`s that a write was blocked for policy reasons — the
+  flagged content itself is never included in that log line.
+
+**Phase 14 — Data export + account deletion**
+- Added `userId String?` to `UserReport` so reports can optionally be
+  linked back to the logged-in user who filed them (`POST /api/reports`
+  now sets it when the caller is logged in; guests still file reports
+  with `userId: null` as before).
+- Added `GET /api/account/export` — requires a logged-in user
+  (`resolveSession().type === "user"`; guests get a 401 explaining that
+  export requires an account) and returns a single JSON file (via
+  `Content-Disposition: attachment`) containing that user's Conversations
+  + Messages + Citations, MemoryItems, Bookmarks, and UserReports.
+- Added `POST /api/account/delete` — requires a logged-in user and a
+  `{ confirm: "DELETE" }` body field. Since `prisma/schema.prisma` doesn't
+  have `onDelete: Cascade` wired up for user-owned rows (left alone to
+  avoid a riskier schema/foreign-key change at this stage), deletion is
+  done manually inside a single `prisma.$transaction([...])`: Citations →
+  Messages → Conversations, MemoryItems, Bookmarks are deleted; UserReport
+  rows are anonymized (`userId` set to `null`, content kept for admin
+  review) rather than deleted; finally the `User` row itself is deleted.
+  The session cookie is cleared on the response.
+- Added `/account` (`src/app/account/page.tsx` + `AccountClient.tsx`),
+  linked from the nav in `src/app/layout.tsx` for logged-in users only.
+  "Download my data" hits the export route and triggers a browser
+  download. "Delete my account" requires typing `DELETE` into a text
+  input before the button is enabled (client-side UX guard only; real
+  enforcement is the server-side `confirm` field check).
+- `node_modules/.prisma/client/{index,default}.d.ts` hand stubs extended
+  again, following the same pattern as prior phases: `pinned` on
+  `ConversationModel`, `category`/`paused` on `MemoryItemModel`, `userId`
+  on `UserReportModel`, plus an `updateMany()` method on `ModelDelegate`
+  and an array-form overload for `$transaction` (both newly needed by the
+  account-deletion transaction above). `edge.d.ts`/`wasm.d.ts` are
+  untouched — they only export loosely-typed `any` stand-ins and don't
+  encode per-model fields.
+
 ## Project structure
 
 - `src/app` — pages (`/`, `/chat/[id]`, `/history`, `/memory`) and API routes

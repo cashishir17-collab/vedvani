@@ -34,6 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <LocaleToggle locale={locale} />
               {session.type === "user" ? (
                 <>
+                  <a href="/account">{t(locale, "navAccount")}</a>
                   <span className="muted">{session.email}</span>
                   <a href="/api/auth/logout">{t(locale, "logOut")}</a>
                 </>

@@ -32,7 +32,13 @@ export default async function MemoryPage() {
         VedVani does not use this memory for anything beyond this page yet.
       </p>
       <MemoryList
-        initialItems={items.map((i) => ({ id: i.id, content: i.content, createdAt: i.createdAt.toISOString() }))}
+        initialItems={items.map((i) => ({
+          id: i.id,
+          content: i.content,
+          category: i.category,
+          paused: i.paused,
+          createdAt: i.createdAt.toISOString(),
+        }))}
       />
     </div>
   );

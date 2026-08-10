@@ -19,7 +19,7 @@ export default async function HistoryPage() {
 
   const conversations = await prisma.conversation.findMany({
     where: session.type === "user" ? { userId: session.userId } : { guestSessionId: session.guestId },
-    orderBy: { updatedAt: "desc" },
+    orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }],
   });
 
   return (
@@ -29,7 +29,7 @@ export default async function HistoryPage() {
       <div className="conversation-list">
         {conversations.map((c) => (
           <a key={c.id} href={`/chat/${c.id}`}>
-            <div>{c.title}</div>
+            <div>{c.pinned ? "\u{1F4CC} " : ""}{c.title}</div>
             <div className="muted">{new Date(c.updatedAt).toLocaleString()}</div>
           </a>
         ))}

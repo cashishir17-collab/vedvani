@@ -36,6 +36,7 @@ model Conversation {
   userId         String?
   user           User?    @relation(fields: [userId], references: [id])
   title          String
+  pinned         Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -99,6 +100,9 @@ model MemoryItem {
   userId         String?
   user           User?    @relation(fields: [userId], references: [id])
   content        String   @db.Text
+  // Phase 13 (BRD FR-MEM): explicit_fact | inferred_preference | summary | learning_progress
+  category       String   @default("inferred_preference")
+  paused         Boolean  @default(false)
   createdAt      DateTime @default(now())
 
   @@index([guestSessionId])
@@ -125,6 +129,10 @@ model UserReport {
   id             String   @id @default(uuid())
   conversationId String?
   messageId      String?
+  // Phase 14: who filed the report, when known (nullable — guests can also
+  // file reports). On account deletion, this is nulled out (anonymized)
+  // rather than deleting the report row, so admins can still review it.
+  userId         String?
   note           String   @db.Text
   status         String   @default("open") // "open" | "resolved"
   createdAt      DateTime @default(now())
