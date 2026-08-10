@@ -15,15 +15,18 @@ model GuestSession {
 
   conversations Conversation[]
   memoryItems   MemoryItem[]
+  bookmarks     Bookmark[]
 }
 
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
+  isAdmin   Boolean  @default(false)
   createdAt DateTime @default(now())
 
   conversations Conversation[]
   memoryItems   MemoryItem[]
+  bookmarks     Bookmark[]
 }
 
 model Conversation {
@@ -79,9 +82,11 @@ model CorpusPassage {
   sourceType      String   // "primary_text" | "paraphrase_summary"
   attribution     String
   traditionTags   String[]
+  reviewStatus    String   @default("unreviewed") // "unreviewed" | "reviewed" | "flagged"
   createdAt       DateTime @default(now())
 
   citations Citation[]
+  bookmarks Bookmark[]
 }
 
 model MemoryItem {
@@ -95,4 +100,29 @@ model MemoryItem {
 
   @@index([guestSessionId])
   @@index([userId])
+}
+
+model Bookmark {
+  id              String   @id @default(uuid())
+  guestSessionId  String?
+  guestSession    GuestSession? @relation(fields: [guestSessionId], references: [id])
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+  corpusPassageId String
+  corpusPassage   CorpusPassage @relation(fields: [corpusPassageId], references: [id])
+  note            String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  @@index([guestSessionId])
+  @@index([userId])
+  @@index([corpusPassageId])
+}
+
+model UserReport {
+  id             String   @id @default(uuid())
+  conversationId String?
+  messageId      String?
+  note           String   @db.Text
+  status         String   @default("open") // "open" | "resolved"
+  createdAt      DateTime @default(now())
 }

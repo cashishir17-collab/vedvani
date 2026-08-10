@@ -22,6 +22,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <a href="/">Ask</a>
               <a href="/history">History</a>
               <a href="/memory">Memory</a>
+              <a href="/read">Read</a>
+              <a href="/learn">Learn</a>
+              <a href="/bookmarks">Bookmarks</a>
               {session.type === "user" ? (
                 <>
                   <span className="muted">{session.email}</span>

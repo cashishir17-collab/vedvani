@@ -22,11 +22,11 @@ export default async function ChatPage({ params }: { params: { id: string } }) {
     );
   }
 
-  const initialMessages = conversation.messages.map((m) => ({
+  const initialMessages = conversation.messages.map((m: any) => ({
     id: m.id,
     role: m.role as "user" | "assistant",
     content: m.content,
-    citations: m.citations.map((c) => ({
+    citations: m.citations.map((c: any) => ({
       id: c.id,
       title: c.corpusPassage.title,
       sourceWork: c.corpusPassage.sourceWork,

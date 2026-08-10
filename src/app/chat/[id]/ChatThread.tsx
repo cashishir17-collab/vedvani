@@ -97,6 +97,21 @@ export default function ChatThread({
     }
   }
 
+  async function reportMessage(messageId: string) {
+    const note = window.prompt("What's wrong with this answer? (brief note)");
+    if (!note || !note.trim()) return;
+    try {
+      await fetch("/api/reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversationId, messageId, note: note.trim() }),
+      });
+      window.alert("Thanks — this has been flagged for review.");
+    } catch {
+      window.alert("Sorry, something went wrong submitting your report.");
+    }
+  }
+
   async function listen(messageId: string, content: string) {
     if (!ttsAvailable) return;
     const res = await fetch("/api/tts", {
@@ -129,7 +144,7 @@ export default function ChatThread({
             </div>
             <div>{m.content}</div>
             {m.role === "assistant" && (
-              <div style={{ marginTop: 8 }}>
+              <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
                 {ttsAvailable && (
                   <button
                     type="button"
@@ -140,6 +155,9 @@ export default function ChatThread({
                     {playingId === m.id ? "Playing..." : "Listen"}
                   </button>
                 )}
+                <button type="button" className="secondary" onClick={() => reportMessage(m.id)}>
+                  Report this answer
+                </button>
               </div>
             )}
             {m.citations.length > 0 && (

@@ -137,6 +137,95 @@ added — this only relies on Postgres built-ins.
 - Vector DB / embeddings-based retrieval — retrieval uses Postgres full-text search
   (`tsvector`/`tsquery`) plus a tradition-tag bias, not semantic/embedding search.
 
+## Phase 3–5: Admin console, scripture reader, learning paths, safety layer
+
+**Phase 3 — Minimal admin/editorial console**
+- `User.isAdmin` (Boolean, default false) and `CorpusPassage.reviewStatus`
+  ("unreviewed" | "reviewed" | "flagged") added to the schema, plus a new
+  `UserReport` model (conversationId?, messageId?, note, status, createdAt).
+- `/admin` (`src/app/admin/page.tsx`) is a server component that calls
+  `resolveAdminSession()` (`src/lib/adminAuth.ts`), which resolves the session
+  and looks up `isAdmin` in the DB — non-admins (including all guests) are
+  redirected to `/` via `next/navigation`'s `redirect()`. It lists every
+  `CorpusPassage` with an inline review-status control (POSTs to
+  `/api/admin/passages/[id]/review`) and every `UserReport` with a "mark
+  resolved" button (POSTs to `/api/admin/reports/[id]/resolve`). Both API
+  routes re-run the same admin check server-side and return 403 for
+  non-admins — the UI gating is not the only protection.
+- Chat replies now have a "Report this answer" button (`ChatThread.tsx`) that
+  posts a short note to `/api/reports`, creating an open `UserReport`.
+- **To grant admin access**, run this SQL directly against the database
+  (there is intentionally no admin-granting UI):
+  ```sql
+  UPDATE "User" SET "isAdmin" = true WHERE email = 'someone@example.com';
+  ```
+
+**Phase 4 — Scripture reader + bookmarks/notes + learning paths**
+- `/read` lists every `CorpusPassage` grouped by `sourceWork`; `/read/[id]`
+  shows the full passage (`scriptText` when present, `translationText`,
+  attribution, tradition tags, and a `sourceType` badge that's colored
+  differently for `primary_text` vs `paraphrase_summary`), plus a Bookmark
+  button.
+- New `Bookmark` model follows the exact guest/user union pattern already
+  used by `Conversation`/`MemoryItem` (`guestSessionId` + `userId`, both
+  optional, exactly one set). `/api/bookmarks` supports GET (list current
+  session's bookmarks), POST (create, optional `note`), and DELETE (`?id=`).
+- `/bookmarks` lists the current guest/user's saved passages with notes,
+  linking back to `/read/[id]`.
+- `src/lib/learningPaths.ts` defines a small `LEARNING_PATHS` constant (5
+  paths spanning the Gita, the Vedic hymns, the Upanishads, the six
+  Darshanas, and the epics) using `titleMatches` substrings resolved against
+  real `CorpusPassage.title` values at request time via Prisma `contains`
+  queries (no hardcoded ids). `/learn` lists the paths; `/learn/[slug]`
+  shows the matched passages in order.
+
+**Phase 5 — Safety layer + citation verification**
+- Core chat logic was extracted from `src/app/api/chat/route.ts` into
+  `runChatTurn()` in `src/lib/chat.ts` so both the chat route and the new
+  eval route can call it directly.
+- Before calling Claude, `classifyMessageSafety()` runs simple keyword/regex
+  checks for: (a) deterministic astrology predictions, (b) self-harm/crisis
+  language, (c) fasting/ritual instructions combined with a medical
+  condition, and (d) requests to validate caste/gender discrimination as
+  scripturally mandated.
+  - Self-harm matches **short-circuit** before any retrieval or Claude call
+    and return a fixed, warm, scripture-free response pointing toward a
+    mental health professional or a crisis helpline.
+  - The other three categories don't block the request — they inject an
+    extra system-prompt instruction telling Claude to decline deterministic
+    claims, name the plurality of traditional views, and add explicit
+    safety caveats.
+- After Claude responds, `verifyCitations()` does simple string matching of
+  `(Source Work Location)`-style citation patterns in the answer against the
+  retrieved passages' `sourceWork`/`location`/`title`. If a citation-looking
+  reference doesn't match anything retrieved, the answer gets
+  `"[unverified citation — please double-check this reference]"` appended.
+  This is conservative on purpose (regex/string matching only, no second LLM
+  call) to avoid false positives.
+- `/api/eval` (admin-only, same `resolveAdminSession()` gate) runs 6
+  hardcoded test questions through `runChatTurn()` and returns
+  `{ results: [{ question, answer, checks }] }` with simple string-contains
+  heuristic checks (e.g. the self-harm question is checked for
+  helpline/professional/support language and the *absence* of a
+  citation pattern; the astrology and caste questions are checked for
+  plurality/caveat language). Hit it with:
+  ```bash
+  curl -b "<your admin session cookie>" http://localhost:3000/api/eval
+  ```
+
+### Sandbox note on Prisma types
+
+`npm run build` normally runs `prisma generate` first, which needs to
+download a query-engine binary. In network-restricted sandboxes that
+download can 403. Since this repo already used a hand-maintained fallback
+`.prisma/client` type stub for the same reason, Phase 3–5 extended that
+stub by hand (`node_modules/.prisma/client/{index,default}.d.ts`) to add
+typed model shapes (`User`, `CorpusPassage`, `Bookmark`, `UserReport`,
+etc.) and a typed `PrismaClient`/`Prisma.sql`, matching `prisma/schema.prisma`
+field-for-field, so the app still gets real typechecking without a working
+network connection. In a normal environment, `npx prisma generate` will
+overwrite this stub with the real generated client as usual.
+
 ## Project structure
 
 - `src/app` — pages (`/`, `/chat/[id]`, `/history`, `/memory`) and API routes
