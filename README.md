@@ -492,3 +492,92 @@ and the new `KnowledgeEntity` model/delegate.
 - `src/app/login`, `src/app/api/auth/{email-login,verify,logout}` — magic-link login
   flow
 - `prisma/schema.prisma`, `prisma/seed.ts`
+
+## UI/UX Redesign v1.0
+
+A full front-end redesign was implemented against a detailed IA/visual
+spec (two modes — "Ask VedVani" conversational chat and "Study Library"
+deep reading — inside a persistent AppShell: left navigation rail, main
+workspace, contextual right panel, top bar, bottom composer).
+
+**Fully implemented and wired to real data:**
+- `src/components/AppShell.tsx` + `src/components/Sidebar.tsx` — grouped,
+  collapsible left rail (brand, new conversation, search, Ask VedVani,
+  divination tools, knowledge library, living-tradition group, personal
+  area, conversation history, pinned donation card, account footer) per
+  spec section 4. Applied globally to every non-admin route via
+  `middleware.ts` (stamps `x-vv-pathname`) + `src/app/layout.tsx`; `/admin`
+  keeps its pre-existing simpler shell untouched.
+- `src/lib/library.ts` — hierarchy-derivation layer (see below) powering:
+  - `/library` — family browser (Vedas & Vedangas, Upanishads, Itihasa,
+    Puranas & Upapuranas, Darshanas & Sutras, Agamas & Tantras, Dharma/Niti
+    & Shastra, Bhakti & Regional Literature) with live work/passage counts
+    and review-status coverage badges, computed from `CorpusPassage`.
+  - `/library/[family]` — works within a family, real counts/coverage.
+  - `/library/work/[work]` — work overview: family, intro, tradition tags,
+    text-layer/attribution summary, "Continue Reading", contents preview,
+    "Ask VedVani about this work".
+  - `/read/[id]` — redesigned into the required TOC | Reading | Study
+    three-column reader (spec section 7), driven by real sibling passages
+    in canonical reading order (`compareLocations`), with prev/next,
+    original/translation layers, translation-compare entry point,
+    attribution, related entities, bookmark, "Ask about this verse", and a
+    compact donation card. Citations already linked here before this pass
+    (`/read/:id`) continue to open the exact passage.
+- Conversational home (`/`, `/ask`) reuses the existing `HomeClient` chat
+  composer (voice input, response-mode selector) wired to the existing
+  `/api/chat` pipeline; `/c/[id]` is a second entry point onto the
+  existing saved-conversation view (`ChatThread`) alongside `/chat/[id]`.
+- `/search` — real full-text-ish search across `CorpusPassage` +
+  `KnowledgeEntity`.
+- Design tokens (maroon/saffron/gold/paper/sand/ink/muted/success/error),
+  8px-ish spacing, Devanagari serif reading styles, reduced-motion guard,
+  and reader/library/sidebar component classes added to
+  `src/app/globals.css` (extends, does not replace, the pre-existing
+  tokens still used by untouched pages).
+
+**Deliberate pragmatic divergence — hierarchy-derivation, not a schema
+migration:** `CorpusPassage` is a flat table (no Work → Division → Section
+→ Unit model). This sandbox cannot reach `binaries.prisma.sh` to run
+`prisma generate`/`migrate dev`, so adding a real hierarchy table was not
+safely achievable here. Instead, `src/lib/library.ts` derives the
+family/work grouping and reading order at query time:
+`familyOf(sourceWork)` buckets each distinct `sourceWork` string into one
+of the eight corpus families by keyword rules; `parseLocation`/
+`compareLocations` turn location strings like `"10.129.1-2"`, `"2.47"`, or
+bulk-ingestion's `"chunk N"` into a comparable ordinal so passages sort in
+canonical reading order instead of alphabetically. Canonical URLs remain
+passage-id based (`/read/:id`) rather than `/read/:work/:reference`,
+matching the citation-linking pattern already established in the existing
+chat pipeline. If/when a real ingestion-time hierarchy table is added,
+`library.ts` is the intended single seam to swap the derivation for real
+joins.
+
+**Stubbed / UI-only (no backend logic wired):**
+- `/astrology`, `/astrology/chart`, `/numerology`, `/tarot` — shells using
+  AppShell + correct disclaimers ("traditional/interpretive guidance",
+  "for reflection, not certainty"); no calculation engines.
+- `/donate` — full UI/copy/flow (amount + programme selection, donor
+  fields) with an explicit "payment gateway integration pending
+  legal/compliance review" state instead of a real checkout; sidebar
+  donation card uses the exact required compact copy, the founder's
+  literal request text appears only on `/donate`.
+- `/topics/[slug]`, `/traditions/[slug]`, `/saints`, `/saints/[slug]`,
+  `/festivals`, `/festivals/[slug]` — thin stubs (reuse `AppShell`,
+  redirect into `/search`/`/entities` where a real backing list already
+  exists).
+- `/settings` — accessibility/voice/response-mode explanation page; no new
+  persisted preferences beyond the existing locale cookie.
+- Voice greeting states (idle/greeting/listening) and TTS playback are
+  described in copy but not built as a dedicated `VoiceOrb` component in
+  this pass — the existing Web Speech API mic input in `HomeClient`
+  remains the actual voice entry point; typing is always a full
+  alternative.
+
+**Not touched:** `prisma/schema.prisma` (no migration attempted, per the
+constraint above), the chat/safety/retrieval pipeline (`src/lib/chat.ts`,
+`src/lib/retrieval.ts`), admin console, auth, memory, bookmarks, i18n
+dictionary structure (extended with new copy inline in components rather
+than every string routed through `t()`, to keep this pass scoped — the
+new UI is currently English-first with the existing locale toggle still
+functional site-wide).
