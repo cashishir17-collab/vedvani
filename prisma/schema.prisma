@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model GuestSession {
+  id           String   @id @default(uuid())
+  email        String?
+  createdAt    DateTime @default(now())
+  lastSeenAt   DateTime @updatedAt
+
+  conversations Conversation[]
+  memoryItems   MemoryItem[]
+}
+
+model Conversation {
+  id             String   @id @default(uuid())
+  guestSessionId String
+  guestSession   GuestSession @relation(fields: [guestSessionId], references: [id])
+  title          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  messages Message[]
+
+  @@index([guestSessionId])
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  role           String   // "user" | "assistant"
+  content        String   @db.Text
+  createdAt      DateTime @default(now())
+
+  citations Citation[]
+
+  @@index([conversationId])
+}
+
+model Citation {
+  id              String   @id @default(uuid())
+  messageId       String
+  message         Message  @relation(fields: [messageId], references: [id])
+  corpusPassageId String
+  corpusPassage   CorpusPassage @relation(fields: [corpusPassageId], references: [id])
+  snippet         String   @db.Text
+  createdAt       DateTime @default(now())
+
+  @@index([messageId])
+  @@index([corpusPassageId])
+}
+
+model CorpusPassage {
+  id              String   @id @default(uuid())
+  title           String
+  sourceWork      String
+  location        String
+  language        String
+  scriptText      String?  @db.Text
+  translationText String   @db.Text
+  sourceType      String   // "primary_text" | "paraphrase_summary"
+  attribution     String
+  traditionTags   String[]
+  createdAt       DateTime @default(now())
+
+  citations Citation[]
+}
+
+model MemoryItem {
+  id             String   @id @default(uuid())
+  guestSessionId String
+  guestSession   GuestSession @relation(fields: [guestSessionId], references: [id])
+  content        String   @db.Text
+  createdAt      DateTime @default(now())
+
+  @@index([guestSessionId])
+}
